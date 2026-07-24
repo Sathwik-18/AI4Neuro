@@ -1,0 +1,20 @@
+.DS_Store
+
+# Local secrets
+.env
+.env.*
+!.env.example
+platform/model-sync.env
+
+# Python/runtime caches
+__pycache__/
+.pytest_cache/
+.venv/
+
+# Large model artifacts
+*.pth
+*.pt
+*.ckpt
+platform/backend/models/eeg/checkpoints/
+platform/backend/models/eeg/reference/
+platform/backend/models/mri/

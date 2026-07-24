@@ -87,6 +87,22 @@ ConVit_checkpoint.pth
 
 That matches the current local env and avoids teammate confusion.
 
+Current uploaded artifact status:
+
+```text
+R2 bucket: ai4neuro-models
+R2 prefix: ai4neuro
+
+ai4neuro/mri/ConVit_checkpoint.pth
+ai4neuro/eeg/checkpoints/classification/ADSZ-Indep/.../checkpoint.pth
+ai4neuro/eeg/checkpoints/classification/ADFD-Indep/.../checkpoint.pth
+ai4neuro/eeg/checkpoints/classification/APAVA-Indep/.../checkpoint.pth
+```
+
+`ADSZ-Indep` is the active EEG Binary checkpoint. `ADFD-Indep` is the active EEG
+Multiclass checkpoint. `APAVA-Indep` is currently uploaded as an optional/extra
+checkpoint.
+
 ## One-Time Upload By Model Owner
 
 Install AWS CLI v2 first. For R2 or Oracle, create S3-compatible access keys.
@@ -131,6 +147,25 @@ Oracle's S3-compatible endpoint.
 
 ## Teammate Sync
 
+Use `platform/model-sync.env.example` as the safe template for required
+variables. Keep real values in your shell or private secret manager, not GitHub.
+
+Simple local setup:
+
+```bash
+cd platform
+cp model-sync.env.example model-sync.env
+```
+
+Fill `model-sync.env` with the Cloudflare R2 values. This file is ignored by
+Git. Then run:
+
+```bash
+./scripts/sync_models_from_object_storage.sh
+```
+
+Alternatively, pass values directly through the shell:
+
 From repo root:
 
 ```bash
@@ -140,9 +175,11 @@ AWS_ACCESS_KEY_ID=... \
 AWS_SECRET_ACCESS_KEY=... \
 MODEL_BUCKET=ai4neuro-models \
 MODEL_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com \
-MODEL_PREFIX=ai4neuro \
 ./scripts/sync_models_from_object_storage.sh
 ```
+
+`MODEL_PREFIX` defaults to `ai4neuro`, matching the current R2 layout. Set it
+only if the bucket layout changes.
 
 After sync, expected local layout:
 

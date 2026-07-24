@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sync AI4NEURO model artifacts from an S3-compatible object store.
-#
-# Works with Cloudflare R2 and Oracle Object Storage S3 compatibility.
-# Requires AWS CLI v2 configured through environment variables:
-#
-#   AWS_ACCESS_KEY_ID=...
-#   AWS_SECRET_ACCESS_KEY=...
-#   MODEL_BUCKET=ai4neuro-models
-#   MODEL_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com
-#
-# Optional:
-#   MODEL_PREFIX=ai4neuro
-#   MODEL_DIR=platform/backend/models
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLATFORM_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_DIR="$(cd "${PLATFORM_DIR}/.." && pwd)"
+MODEL_SYNC_ENV="${MODEL_SYNC_ENV:-${PLATFORM_DIR}/model-sync.env}"
+
+if [[ -f "${MODEL_SYNC_ENV}" ]]; then
+  # shellcheck disable=SC1090
+  source "${MODEL_SYNC_ENV}"
+fi
 
 MODEL_BUCKET="${MODEL_BUCKET:?Set MODEL_BUCKET, for example ai4neuro-models}"
 MODEL_ENDPOINT_URL="${MODEL_ENDPOINT_URL:?Set MODEL_ENDPOINT_URL for R2/Oracle S3 compatibility}"
-MODEL_PREFIX="${MODEL_PREFIX:-}"
+MODEL_PREFIX="${MODEL_PREFIX:-ai4neuro}"
 MODEL_DIR="${MODEL_DIR:-${PLATFORM_DIR}/backend/models}"
 
 if ! command -v aws >/dev/null 2>&1; then

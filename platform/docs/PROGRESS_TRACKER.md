@@ -1,6 +1,6 @@
 # AI4NEURO Progress Tracker
 
-Last updated: 2026-07-11.
+Last updated: 2026-07-12.
 
 This is the living progress sheet for the unified platform. Update this whenever
 we make a setup, security, model, report, or deployment decision.
@@ -18,6 +18,7 @@ The repo is at a useful checkpoint for team collaboration:
 - PDF generation verified across EEG/MRI binary/multiclass report variants
 - user-facing analysis errors sanitized
 - MRI analysis labels normalized to Binary and Multiclass
+- EEG/MRI checkpoints uploaded to Cloudflare R2 bucket `ai4neuro-models`
 
 ## Completed Recently
 
@@ -35,12 +36,13 @@ The repo is at a useful checkpoint for team collaboration:
 | Supabase JWT support | Done | Backend supports legacy HS256 and newer JWKS asymmetric tokens. |
 | Team onboarding guide | Done | See `platform/docs/TEAM_ONBOARDING.md`. |
 | Windows teammate path | Done | Backend guidance recommends WSL2 Ubuntu, frontend can run on Windows. |
+| R2 model artifacts | Done | EEG ADSZ/ADFD/APAVA and MRI `ConVit_checkpoint.pth` uploaded under `ai4neuro/`. |
 
 ## Next High-Priority Work
 
 | Priority | Task | Owner | Status |
 |---:|---|---|---|
-| P0 | Store model artifacts in R2 or Oracle Object Storage | TBD | Pending |
+| P0 | Store model artifacts in R2 or Oracle Object Storage | Done | Completed in Cloudflare R2. |
 | P0 | Add model sync/bootstrap script for teammates and Oracle VM | Done | Completed |
 | P0 | Add checkpoint upload/sync guide and team ownership split | Done | Completed |
 | P0 | Confirm backend works with Supabase `sb_secret_...` key | Done | Completed |
@@ -59,7 +61,19 @@ The repo is at a useful checkpoint for team collaboration:
 Canonical artifact store:
 
 ```text
-R2 or Oracle Object Storage
+Cloudflare R2
+bucket: ai4neuro-models
+prefix: ai4neuro
+endpoint: https://<cloudflare-account-id>.r2.cloudflarestorage.com
+```
+
+Uploaded artifacts:
+
+```text
+ai4neuro/eeg/checkpoints/classification/ADSZ-Indep/.../checkpoint.pth
+ai4neuro/eeg/checkpoints/classification/ADFD-Indep/.../checkpoint.pth
+ai4neuro/eeg/checkpoints/classification/APAVA-Indep/.../checkpoint.pth
+ai4neuro/mri/ConVit_checkpoint.pth
 ```
 
 Runtime paths:

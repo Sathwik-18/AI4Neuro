@@ -79,7 +79,7 @@ Supabase is an **external managed service** — it is not a container in
 models/
   eeg/checkpoints/classification/ADSZ-Indep/...   # from Alzheimer-Detection/backend/SIDDHI/checkpoints
   eeg/reference/{feature_07.npy, feature_35.npy, representative/*}
-  mri/ConViT_model.pth                             # host on Releases/HuggingFace (gitignored)
+  mri/ConVit_checkpoint.pth                        # synced from Cloudflare R2 / object storage
 ```
 
 Point `EEG_CHECKPOINT_ROOT`, `EEG_REFERENCE_DIR`, `CONVIT_CHECKPOINT_PATH` at these.

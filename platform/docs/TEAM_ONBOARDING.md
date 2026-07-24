@@ -6,6 +6,9 @@ This guide is for teammates who clone the repo and need a predictable local
 setup. It separates the product app setup from large model artifacts, Supabase
 secrets, and host-specific CAT12 tooling.
 
+For a copy-paste teammate handoff with commands and env files, start with:
+[TEAM_LOCAL_SETUP_HANDOFF.md](./TEAM_LOCAL_SETUP_HANDOFF.md).
+
 ## 1. What GitHub Contains
 
 GitHub should contain:
@@ -224,7 +227,7 @@ Recommended Oracle VM runtime layout:
 /opt/ai4neuro/models/
   eeg/checkpoints/
   eeg/reference/
-  mri/ConViT_model.pth
+  mri/ConVit_checkpoint.pth
 ```
 
 Team rule:
@@ -238,13 +241,25 @@ Use the repo sync helper after the team creates a shared R2/Oracle bucket:
 
 ```bash
 cd platform
+cp model-sync.env.example model-sync.env
+# Fill model-sync.env with private R2 values, then:
+./scripts/sync_models_from_object_storage.sh
+```
+
+For CI/Oracle VM, pass secrets through the shell or secret manager instead:
+
+```bash
+cd platform
 AWS_ACCESS_KEY_ID=... \
 AWS_SECRET_ACCESS_KEY=... \
 MODEL_BUCKET=ai4neuro-models \
 MODEL_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com \
-MODEL_PREFIX=ai4neuro \
 ./scripts/sync_models_from_object_storage.sh
 ```
+
+`MODEL_PREFIX` defaults to `ai4neuro`, which matches the current Cloudflare R2
+bucket layout. For the safe variable template, see
+`platform/model-sync.env.example`.
 
 For Oracle Object Storage S3 compatibility, use Oracle's S3 endpoint as
 `MODEL_ENDPOINT_URL` and an S3-compatible access key pair.
