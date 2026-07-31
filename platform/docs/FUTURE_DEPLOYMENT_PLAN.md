@@ -44,11 +44,6 @@ of the Docker build.
 For the final URL, DNS, SSL, and environment-variable mapping, see:
 [`PRODUCTION_HOSTING_DNS_REFERENCE.md`](./PRODUCTION_HOSTING_DNS_REFERENCE.md).
 
-For rebuilding this deployment in an organization-owned OCI tenancy or
-migrating it to AWS, including ownership, cutover, rollback, and automation
-checklists, see:
-[`CLOUD_REBUILD_AND_MIGRATION_RUNBOOK.md`](./CLOUD_REBUILD_AND_MIGRATION_RUNBOOK.md).
-
 ## Why Not Put Models In Git Or The Docker Image?
 
 Do not commit `.pth`, `.pt`, `.ckpt`, or full checkpoint folders.

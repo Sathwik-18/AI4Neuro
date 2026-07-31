@@ -109,10 +109,6 @@ See `docs/architecture.md` for the unified result shape and the data model.
 
 ## Run it
 
-For the complete staged deployment record and reproducible macOS, Windows,
-Ubuntu, OCI, R2, Supabase, CAT12, Caddy, and Vercel procedure, see
-[`docs/END_TO_END_DEPLOYMENT_RUNBOOK.md`](./docs/END_TO_END_DEPLOYMENT_RUNBOOK.md).
-
 ### Local dev (two terminals)
 
 ```bash
