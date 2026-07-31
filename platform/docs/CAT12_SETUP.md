@@ -1,5 +1,12 @@
 # CAT12 Setup, Deployment, And Testing
 
+> For the exact working OCI paths, Linux installer commands, MATLAB Runtime
+> `R2023b/R2023b` path, `.nii.gz` workaround, and verified smoke-test procedure,
+> use
+> [`END_TO_END_DEPLOYMENT_RUNBOOK.md`](./END_TO_END_DEPLOYMENT_RUNBOOK.md).
+> Generic path examples later in this older focused guide are not the current
+> staging inventory.
+
 CAT12 is external neuroimaging tooling, not a Python package. The AI4NEURO
 backend can call it, but each host must install and configure CAT12 plus MATLAB
 Runtime before `USE_CAT12_PREPROCESSING=true` is enabled.

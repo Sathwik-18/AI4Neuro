@@ -3,8 +3,14 @@
 How to run the unified platform in production. See `README.md` for local dev and
 `architecture.md` for how it fits together.
 
+For the complete, recorded OCI + R2 + Supabase + CAT12 + Caddy + Vercel setup,
+including cross-platform workstation commands and troubleshooting, start with
+[`END_TO_END_DEPLOYMENT_RUNBOOK.md`](./END_TO_END_DEPLOYMENT_RUNBOOK.md).
+
 For URL/domain/DNS planning, see
 [`PRODUCTION_HOSTING_DNS_REFERENCE.md`](./PRODUCTION_HOSTING_DNS_REFERENCE.md).
+For the Ubuntu Caddy reverse proxy and automatic HTTPS procedure, see
+[`CADDY_HTTPS_SETUP.md`](./CADDY_HTTPS_SETUP.md).
 
 ---
 
