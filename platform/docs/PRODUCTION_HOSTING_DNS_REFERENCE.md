@@ -3,6 +3,9 @@
 This document explains how AI4NEURO production URLs, hosts, DNS records, and
 environment variables should fit together.
 
+For the complete beginner-friendly reverse-proxy procedure, see
+[`CADDY_HTTPS_SETUP.md`](./CADDY_HTTPS_SETUP.md).
+
 Use the term:
 
 ```text
@@ -29,10 +32,12 @@ If the final root domain is not ready yet, use temporary provider URLs:
 
 ```text
 Frontend: https://ai4neuro.vercel.app
-Backend:  http://<oracle-vm-public-ip>:8000
+Backend:  https://<VM-PUBLIC-IP-WITH-DASHES>.sslip.io
 ```
 
-Then switch to the final domain after DNS is ready.
+For example, public IP `203.0.113.25` becomes the temporary hostname
+`203-0-113-25.sslip.io`. Use this only for staging. Then switch to an
+organization-owned domain and reserved/static public IP before production.
 
 ## Service Map
 
@@ -43,7 +48,7 @@ app.ai4neuro.in
 
 api.ai4neuro.in
   -> Oracle VM public IP
-  -> Caddy or Nginx
+  -> Caddy on ports 80/443
   -> FastAPI on localhost:8000
 
 xxxxx.supabase.co
@@ -132,6 +137,19 @@ Caddy
 
 because it handles Let's Encrypt certificates with less manual work than Nginx.
 
+Caddy is not the FastAPI application. It is the public HTTPS layer in front of
+FastAPI:
+
+```text
+Internet -> Caddy:443 -> 127.0.0.1:8000 -> FastAPI
+```
+
+Caddy automatically redirects HTTP to HTTPS and manages certificate renewal.
+It does not replace Supabase authentication, application authorization, rate
+limiting, monitoring, or backups. See
+[`CADDY_HTTPS_SETUP.md`](./CADDY_HTTPS_SETUP.md) for installation,
+configuration, verification, migration, and troubleshooting.
+
 ## Backend Runtime
 
 FastAPI should not be exposed directly on port `8000` in final production.
@@ -146,18 +164,10 @@ Public internet
 -> FastAPI / Uvicorn
 ```
 
-Uvicorn command behind Caddy:
+The production Uvicorn service must bind to localhost:
 
 ```bash
-cd /opt/ai4neuro/app/platform/backend
-source .venv/bin/activate
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-For early testing before DNS:
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
 Open Oracle firewall/security-list ingress for:
@@ -168,7 +178,9 @@ Open Oracle firewall/security-list ingress for:
 443/tcp  HTTPS API
 ```
 
-Avoid exposing `8000/tcp` publicly after Caddy is configured.
+Do not expose `8000/tcp` publicly, including for temporary testing. Test
+FastAPI locally with `curl http://127.0.0.1:8000/...`, then test public access
+through Caddy and HTTPS.
 
 ## Frontend Environment
 

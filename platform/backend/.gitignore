@@ -13,3 +13,6 @@ models/.DS_Store
 # models/mri/*.pth
 models/mri/*.pt
 models/mri/*.ckpt
+platform/.env
+platform/model-sync.env
+platform/backend/models/
