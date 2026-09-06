@@ -77,7 +77,7 @@ function HospitalDetailPageInner() {
     <RoleShell>
       <Link
         href="/super-admin/hospitals"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-700 mb-2"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-700 mb-2"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Hospitals
@@ -112,8 +112,8 @@ function HospitalDetailPageInner() {
       <SectionCard className="p-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 rounded-xl bg-indigo-50 shrink-0">
-              <Building2 className="h-6 w-6 text-indigo-600" />
+            <div className="p-2.5 rounded-xl bg-blue-50 shrink-0">
+              <Building2 className="h-6 w-6 text-blue-600" />
             </div>
             <div className="min-w-0">
               <p className="text-lg font-semibold text-slate-900 truncate">{hospital?.name ?? '—'}</p>

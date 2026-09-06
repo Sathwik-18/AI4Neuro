@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Poppins, JetBrains_Mono } from "next/font/google";
+import { Lexend, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { PageTransitionLoader } from "@/components/shared/PageTransition";
 import "./globals.css";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const lexend = Lexend({
+  variable: "--font-lexend",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
 });
@@ -29,8 +30,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        />
+      </head>
       <body
-        className={`${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${lexend.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -41,6 +48,7 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
+              <PageTransitionLoader />
               {children}
               <Toaster />
             </AuthProvider>

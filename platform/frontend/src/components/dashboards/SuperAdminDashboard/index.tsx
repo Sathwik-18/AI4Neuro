@@ -202,7 +202,7 @@ export const SuperAdminDashboard: React.FC = () => {
             <select
               value={selectedHospitalId ?? ''}
               onChange={(e) => setSelectedHospitalId(e.target.value || null)}
-              className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option value="">All Hospitals</option>
               {(hospitals ?? []).map((h) => (
@@ -246,7 +246,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   </div>
                   <Link
                     href={selectedHospitalId ? `/super-admin/analytics?hospital_id=${selectedHospitalId}` : '/super-admin/analytics'}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase hover:bg-indigo-100"
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase hover:bg-blue-100"
                   >
                     View Full Analytics →
                   </Link>
@@ -283,7 +283,7 @@ export const SuperAdminDashboard: React.FC = () => {
                               <div className="bg-slate-900/95 backdrop-blur border border-slate-800 px-3 py-2 rounded-xl shadow-xl text-white">
                                 <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{label}</p>
                                 <p className="text-xs font-black mt-0.5 flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                   {payload[0].value} Scans
                                 </p>
                               </div>
@@ -307,7 +307,7 @@ export const SuperAdminDashboard: React.FC = () => {
             </SectionCard>
 
             {/* Quick Metrics sidebar card */}
-            <SectionCard className="p-5 xl:col-span-1 flex flex-col justify-between bg-gradient-to-br from-indigo-950 to-slate-950 text-white border border-indigo-500/20 shadow-md h-full">
+            <SectionCard className="p-5 xl:col-span-1 flex flex-col justify-between bg-slate-900 text-white border border-blue-500/20 shadow-md h-full">
               <div className="space-y-4">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -324,7 +324,7 @@ export const SuperAdminDashboard: React.FC = () => {
                 <div className="border-t border-slate-800/80 pt-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-400">Daily Average</span>
-                    <span className="text-xs font-bold text-indigo-400">
+                    <span className="text-xs font-bold text-blue-400">
                       {dailyAverageScans.toFixed(1)} scans/day
                     </span>
                   </div>
@@ -465,7 +465,7 @@ export const SuperAdminDashboard: React.FC = () => {
                         type="button"
                         onClick={() => setScanScope('all')}
                         className={`px-2.5 py-1 rounded-md transition-colors ${
-                          scanScope === 'all' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                          scanScope === 'all' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
                         All Scans
@@ -474,13 +474,13 @@ export const SuperAdminDashboard: React.FC = () => {
                         type="button"
                         onClick={() => setScanScope('mine')}
                         className={`px-2.5 py-1 rounded-md transition-colors ${
-                          scanScope === 'mine' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                          scanScope === 'mine' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
                         My Scans
                       </button>
                     </div>
-                    <Link href="/super-admin/scans" className="text-xs font-medium text-indigo-700">
+                    <Link href="/super-admin/scans" className="text-xs font-medium text-blue-700">
                       View All Scans
                     </Link>
                   </div>
@@ -543,7 +543,7 @@ export const SuperAdminDashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-slate-900">Recent Hospitals</h3>
                   <p className="text-xs text-slate-400">Platform-wide, unaffected by the hospital filter above</p>
                 </div>
-                <Link href="/super-admin/hospitals" className="text-xs font-medium text-indigo-700">
+                <Link href="/super-admin/hospitals" className="text-xs font-medium text-blue-700">
                   View All
                 </Link>
               </div>
@@ -560,8 +560,8 @@ export const SuperAdminDashboard: React.FC = () => {
                   {recentHospitals.map((h) => (
                     <div key={h.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-indigo-50 shrink-0">
-                          <Building2 className="h-4 w-4 text-indigo-600" />
+                        <div className="p-1.5 rounded-lg bg-blue-50 shrink-0">
+                          <Building2 className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-slate-900 truncate">{h.name}</p>
@@ -581,7 +581,7 @@ export const SuperAdminDashboard: React.FC = () => {
               {/* System Status — live health checks, replacing the old static Alerts copy */}
               <SectionCard className="p-4">
                 <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
-                  <Server className="h-4 w-4 text-indigo-600" />
+                  <Server className="h-4 w-4 text-blue-600" />
                   System Status
                 </h3>
                 <div className="space-y-2.5">

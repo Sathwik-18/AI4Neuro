@@ -55,7 +55,7 @@ TERMINAL_STATUSES: frozenset[str] = frozenset(
 # Allowed upload extensions per modality (validated at the API boundary).
 ALLOWED_EXTENSIONS: dict[str, tuple[str, ...]] = {
     Modality.eeg.value: (".npy",),
-    Modality.mri.value: (".nii", ".nii.gz", ".gz"),
+    Modality.mri.value: (".nii", ".nii.gz"),
 }
 
 

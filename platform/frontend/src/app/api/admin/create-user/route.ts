@@ -3,27 +3,35 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createClient } from '@/lib/supabase/server';
 import nodemailer from 'nodemailer';
 
-// Generate random password
+import crypto from 'crypto';
+
+// Generate cryptographically secure random password
 function generatePassword(length = 12): string {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+  const randomBytes = crypto.randomBytes(length);
   let password = '';
   for (let i = 0; i < length; i++) {
-    password += charset.charAt(Math.floor(Math.random() * charset.length));
+    password += charset.charAt(randomBytes[i] % charset.length);
   }
   return password;
 }
 
-// Generate unique codes
+// Generate unique codes with cryptographic randomness
 function generateCode(prefix: string): string {
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0');
-  return `${prefix}${timestamp}${random}`;
+  const hex = crypto.randomBytes(5).toString('hex').toUpperCase();
+  return `${prefix}${hex}`;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    // CSRF protection: verify the request originates from our own frontend
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
+    if (origin && host && !origin.includes(host.split(':')[0])) {
+      return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 });
+    }
+
     // Verify admin authentication
     const supabase = await createClient();
     const {
@@ -55,6 +63,15 @@ export async function POST(request: NextRequest) {
     if (!email || !full_name || !role) {
       return NextResponse.json(
         { error: 'Missing required fields: email, full_name, role' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
         { status: 400 }
       );
     }
@@ -202,7 +219,7 @@ export async function POST(request: NextRequest) {
         secure: false,
         auth: {
           user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD,
+          pass: process.env.EMAIL_APP_PASSWORD,
         },
       });
 
@@ -292,13 +309,13 @@ export async function POST(request: NextRequest) {
         email,
         full_name,
         role,
-        temporaryPassword,
       },
+      ...(emailSent ? {} : { temporaryPassword }),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create user error:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

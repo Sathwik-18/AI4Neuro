@@ -65,6 +65,10 @@ async function authHeaders(): Promise<Record<string, string>> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  // getSession() reads from local storage without server verification.
+  // This is acceptable for API calls because the FastAPI backend independently
+  // verifies the JWT signature and expiry. Use getUser() for security-critical
+  // decisions on the client side instead.
   const token = session?.access_token;
   return token ? { Authorization: `Bearer ${token}` } : {};
 }

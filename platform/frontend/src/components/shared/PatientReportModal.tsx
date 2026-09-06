@@ -198,17 +198,17 @@ export function PatientReportModal({ data, onClose }: PatientReportModalProps) {
         </div>
 
         {/* Letterhead */}
-        <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-6 py-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600 to-emerald-600 text-white px-6 py-5 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold leading-tight">Brain Health Summary</h1>
-            <p className="text-teal-50 text-sm">Patient&apos;s Copy — easy-to-read report</p>
+            <p className="text-blue-50 text-sm">Patient&apos;s Copy — easy-to-read report</p>
           </div>
           <div className="text-right">
             <div className="flex items-center gap-2 justify-end">
               <ModalityIcon className="h-6 w-6" />
               <span className="font-semibold">{data.hospitalName || 'AI4Neuro'}</span>
             </div>
-            <p className="text-[11px] text-teal-50 mt-0.5">a product by PraxiaTech</p>
+            <p className="text-[11px] text-blue-50 mt-0.5">a product by PraxiaTech</p>
           </div>
         </div>
 
@@ -232,7 +232,7 @@ export function PatientReportModal({ data, onClose }: PatientReportModalProps) {
           {/* Result */}
           <section>
             <div className="flex items-center gap-2 mb-2">
-              <HeartPulse className="h-4 w-4 text-teal-600" />
+              <HeartPulse className="h-4 w-4 text-blue-600" />
               <h2 className="text-sm font-bold text-slate-800">Your Result</h2>
             </div>
 
@@ -274,7 +274,7 @@ export function PatientReportModal({ data, onClose }: PatientReportModalProps) {
               </section>
               <section className="rounded-xl border border-slate-200 p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Lightbulb className="h-4 w-4 text-teal-600" />
+                  <Lightbulb className="h-4 w-4 text-blue-600" />
                   <h3 className="text-sm font-semibold text-slate-800">What happens next</h3>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">{copy.next}</p>
@@ -315,7 +315,7 @@ export function PatientReportModal({ data, onClose }: PatientReportModalProps) {
               href={data.reportPdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="no-print inline-flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-800"
+              className="no-print inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-800"
             >
               View the full detailed report <ExternalLink className="h-3.5 w-3.5" />
             </a>

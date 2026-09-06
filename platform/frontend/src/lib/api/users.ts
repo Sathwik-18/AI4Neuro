@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { clampPageSize } from './index';
 import type { ApiResponse, PaginatedResponse, FilterOptions } from './index';
 import type { Role, AccountStatus } from '@/lib/roles';
 
@@ -74,13 +75,13 @@ class UsersApi {
     try {
       const {
         page = 1,
-        pageSize = 10,
         sortBy = 'created_at',
         sortOrder = 'desc',
         search = '',
         role,
         status,
       } = options;
+      const pageSize = clampPageSize(options.pageSize);
 
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
@@ -91,7 +92,8 @@ class UsersApi {
 
       // Apply filters
       if (search) {
-        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+        const sanitized = search.replace(/[%_(),.]/g, '');
+        query = query.or(`full_name.ilike.%${sanitized}%,email.ilike.%${sanitized}%`);
       }
 
       if (role) {
@@ -344,9 +346,9 @@ class UsersApi {
   }>> {
     try {
       const [hospitalsRes, qualificationsRes, bloodGroupsRes] = await Promise.all([
-        this.supabase.from('hospitals').select('id, name, city'),
-        this.supabase.from('qualifications').select('id, qualification_name'),
-        this.supabase.from('blood_groups').select('id, blood_group'),
+        this.supabase.from('hospitals').select('id, name, city').limit(500),
+        this.supabase.from('qualifications').select('id, qualification_name').limit(500),
+        this.supabase.from('blood_groups').select('id, blood_group').limit(100),
       ]);
 
       if (hospitalsRes.error) throw hospitalsRes.error;

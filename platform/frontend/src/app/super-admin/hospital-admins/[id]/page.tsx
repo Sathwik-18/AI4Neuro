@@ -111,7 +111,7 @@ function HospitalAdminProfilePageInner() {
         <>
           <SectionCard className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ function HospitalAdminProfilePageInner() {
                 <p className="text-sm text-slate-500 mt-1">{admin.email} · {admin.phone}</p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <a href="#activity" className="px-4 py-2 rounded-xl text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                <a href="#activity" className="px-4 py-2 rounded-xl text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
                   Recent Activity
                 </a>
               </div>
@@ -142,7 +142,7 @@ function HospitalAdminProfilePageInner() {
           <div className="grid gap-4 lg:grid-cols-3">
             <SectionCard className="p-5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <Building2 className="h-4 w-4 text-teal-600" />
+                <Building2 className="h-4 w-4 text-blue-600" />
                 Hospital Details
               </h3>
               <div className="space-y-2">
@@ -182,7 +182,7 @@ function HospitalAdminProfilePageInner() {
 
           <SectionCard id="activity" className="p-5 scroll-mt-4">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-              <Activity className="h-4 w-4 text-indigo-600" />
+              <Activity className="h-4 w-4 text-blue-600" />
               Recent Activity
             </h3>
             <SessionsTable

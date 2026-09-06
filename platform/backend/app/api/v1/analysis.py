@@ -16,9 +16,13 @@ from fastapi import (
     Form,
     HTTPException,
     Query,
+    Request,
     UploadFile,
     status,
 )
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.api.deps import get_current_user, get_database, get_storage
 from app.core.cache import cached
@@ -26,6 +30,8 @@ from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
 from app.core.security import Principal
 from app.services import permissions
+
+limiter = Limiter(key_func=get_remote_address)
 from app.schemas.analysis import (
     ALLOWED_EXTENSIONS,
     AnalysisResultResponse,
@@ -91,20 +97,20 @@ def _normalize_analysis_type(modality: str, analysis_type: str) -> str:
 
 
 def _safe_exception_details(exc: Exception) -> dict:
-    """Expose concise DB/storage diagnostics without leaking stack traces."""
-    details = {
+    """Return a safe error summary without leaking schema internals."""
+    from app.core.config import get_settings
+    if get_settings().is_production:
+        return {"type": exc.__class__.__name__}
+    return {
         "type": exc.__class__.__name__,
         "message": str(exc)[:500],
     }
-    for attr in ("code", "message", "details", "hint"):
-        value = getattr(exc, attr, None)
-        if value:
-            details[attr] = str(value)[:500]
-    return details
 
 
 @router.post("", response_model=CreateAnalysisResponse, status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("10/minute")
 async def create_analysis(
+    request: Request,
     file: UploadFile = File(...),
     modality: str = Form(...),
     analysis_type: str = Form(...),
@@ -182,16 +188,20 @@ async def create_analysis(
     if principal.role == "doctor" and not doctor_id:
         doctor_id = principal.user_id
 
-    # TODO(security): doctor_id/radiologist_id supplied on the form are
-    # currently trusted as-is (beyond the self-assign defaults above).
-    # permissions.can_read_session grants read access to whoever is named as
-    # doctor_id/radiologist_id on a session row, so a malicious uploader could
-    # currently name themselves (or anyone) as doctor_id/radiologist_id on
-    # someone else's session to gain read access. This should verify (via a
-    # user_profiles lookup) that the named user actually belongs to
-    # hospital_id and holds the corresponding role before accepting it,
-    # mirroring the hospital_id check above. Deferred here to keep this pass
-    # focused — the hospital_id check (the required fix) is in place above.
+    if doctor_id and principal.role != "super_admin":
+        doc_profile = db.get_user_profile(doctor_id)
+        if not doc_profile or doc_profile.get("role") != "doctor" or str(doc_profile.get("hospital_id")) != str(hospital_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "invalid_doctor", "message": "Named doctor does not exist or does not belong to this hospital."},
+            )
+    if radiologist_id and radiologist_id != principal.user_id and principal.role != "super_admin":
+        rad_profile = db.get_user_profile(radiologist_id)
+        if not rad_profile or rad_profile.get("role") != "radiologist" or str(rad_profile.get("hospital_id")) != str(hospital_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"code": "invalid_radiologist", "message": "Named radiologist does not exist or does not belong to this hospital."},
+            )
 
     # 1) Create the session row (queued).
     try:

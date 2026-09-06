@@ -100,7 +100,7 @@ export default function PatientViewerPage({
       <RoleShell>
         <div className="relative z-10 flex items-center justify-center h-[70vh]">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-teal-500 mx-auto mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
             <p className="text-muted-foreground">Loading your scan...</p>
           </div>
         </div>
@@ -186,7 +186,7 @@ export default function PatientViewerPage({
             <div className="h-6 w-px bg-border" />
             <div>
               <h1 className="text-xl lg:text-2xl font-bold text-foreground flex items-center gap-2">
-                <Brain className="h-5 w-5 lg:h-6 lg:w-6 text-teal-500" />
+                <Brain className="h-5 w-5 lg:h-6 lg:w-6 text-blue-500" />
                 <GradientText>My Brain Scan</GradientText>
               </h1>
               <p className="text-xs lg:text-sm text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
@@ -264,7 +264,7 @@ export default function PatientViewerPage({
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <HeartPulse className="h-4 w-4 text-teal-500" />
+                    <HeartPulse className="h-4 w-4 text-blue-500" />
                     <h3 className="text-sm font-semibold text-foreground">
                       Your Results
                     </h3>
@@ -350,7 +350,7 @@ export default function PatientViewerPage({
             <SpotlightCard spotlightColor="rgba(20, 184, 166, 0.08)">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <BookOpen className="h-4 w-4 text-teal-500" />
+                  <BookOpen className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">
                     Understanding Your Scan
                   </h3>
@@ -406,7 +406,7 @@ export default function PatientViewerPage({
             <SpotlightCard spotlightColor="rgba(20, 184, 166, 0.08)">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <FileText className="h-4 w-4 text-teal-500" />
+                  <FileText className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">
                     Your Report
                   </h3>
@@ -427,11 +427,11 @@ export default function PatientViewerPage({
                       className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 hover:scale-[1.01] ${
                         config
                           ? `${config.bgColor} ${config.borderColor}`
-                          : 'bg-teal-500/10 border-teal-500/30'
+                          : 'bg-blue-500/10 border-blue-500/30'
                       }`}
                     >
                       <div className="p-2 rounded-lg bg-slate-100">
-                        <FileText className="h-5 w-5 text-teal-600" />
+                        <FileText className="h-5 w-5 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">
@@ -465,7 +465,7 @@ export default function PatientViewerPage({
               <SpotlightCard spotlightColor="rgba(20, 184, 166, 0.08)">
                 <div className="p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Lightbulb className="h-4 w-4 text-teal-500" />
+                    <Lightbulb className="h-4 w-4 text-blue-500" />
                     <h3 className="text-sm font-semibold text-foreground">
                       What&apos;s Next?
                     </h3>
@@ -491,7 +491,7 @@ export default function PatientViewerPage({
                   </div>
 
                   <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-slate-50">
-                    <ClipboardList className="h-3.5 w-3.5 text-teal-600 mt-0.5 shrink-0" />
+                    <ClipboardList className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
                       Bring this report to your next doctor&apos;s appointment
                       so they can review the findings with you and answer any
@@ -506,7 +506,7 @@ export default function PatientViewerPage({
             <SpotlightCard spotlightColor="rgba(20, 184, 166, 0.08)">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <ShieldCheck className="h-4 w-4 text-teal-500" />
+                  <ShieldCheck className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">
                     Important Notice
                   </h3>

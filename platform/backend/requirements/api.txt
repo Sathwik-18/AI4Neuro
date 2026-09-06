@@ -21,3 +21,6 @@ PyJWT[crypto]==2.13.0
 # Shared utilities
 python-dotenv==1.0.1
 cachetools==7.1.6
+
+# Rate limiting
+slowapi==0.1.9

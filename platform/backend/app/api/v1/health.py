@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from app.api.deps import get_current_user
 from app.core.config import get_settings
+from app.core.security import Principal
 from app.services.supabase_client import get_service_client
 
 router = APIRouter(prefix="/health", tags=["health"])
@@ -42,7 +44,7 @@ def health() -> HealthResponse:
 
 
 @router.get("/database", response_model=DatabaseHealthResponse)
-def health_database() -> DatabaseHealthResponse:
+def health_database(principal: Principal = Depends(get_current_user)) -> DatabaseHealthResponse:
     """Report whether Supabase is configured (does not run a query in MVP)."""
     settings = get_settings()
     configured = bool(settings.supabase_url and settings.supabase_service_role_key)
@@ -50,7 +52,7 @@ def health_database() -> DatabaseHealthResponse:
 
 
 @router.get("/storage", response_model=StorageHealthResponse)
-def health_storage() -> StorageHealthResponse:
+def health_storage(principal: Principal = Depends(get_current_user)) -> StorageHealthResponse:
     settings = get_settings()
     configured = get_service_client() is not None
     return StorageHealthResponse(

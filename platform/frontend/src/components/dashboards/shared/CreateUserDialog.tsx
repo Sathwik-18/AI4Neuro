@@ -43,8 +43,8 @@ interface Qualification {
 }
 
 const ACCENT_CLASSES: Record<'teal' | 'indigo', string> = {
-  teal: 'bg-teal-600 hover:bg-teal-700',
-  indigo: 'bg-indigo-600 hover:bg-indigo-700',
+  teal: 'bg-blue-600 hover:bg-blue-700',
+  indigo: 'bg-blue-600 hover:bg-blue-700',
 };
 
 /** Mirrors the unique_identifier codes the old Next.js route used to
@@ -52,11 +52,10 @@ const ACCENT_CLASSES: Record<'teal' | 'indigo', string> = {
  * since the real backend requires the caller to supply one. */
 function generateUniqueIdentifier(role: Role): string {
   const prefix = role.slice(0, 2).toUpperCase();
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, '0');
-  return `${prefix}${timestamp}${random}`;
+  const bytes = new Uint8Array(5);
+  crypto.getRandomValues(bytes);
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+  return `${prefix}${hex}`;
 }
 
 interface CreateUserDialogProps {
@@ -250,7 +249,7 @@ export function CreateUserDialog({
                 <SelectTrigger id="role">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="max-h-60">
                   {roleOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
@@ -272,7 +271,7 @@ export function CreateUserDialog({
                   <SelectTrigger id="hospital">
                     <SelectValue placeholder="Select hospital" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" className="max-h-60">
                     {hospitals.map((h) => (
                       <SelectItem key={h.id} value={h.id}>
                         {h.name}
@@ -323,7 +322,7 @@ export function CreateUserDialog({
                     <SelectTrigger id="qualification">
                       <SelectValue placeholder="Select qualification" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="max-h-60">
                       {qualifications.map((q) => (
                         <SelectItem key={q.id} value={String(q.id)}>
                           {q.qualification_name}
@@ -435,7 +434,7 @@ export function CreateUserDialog({
                     <SelectTrigger id="blood_group">
                       <SelectValue placeholder="Select blood group" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="max-h-60">
                       {bloodGroups.map((bg) => (
                         <SelectItem key={bg.id} value={String(bg.id)}>
                           {bg.blood_type}
@@ -491,7 +490,7 @@ export function CreateUserDialog({
                 <div className="border-t border-slate-200" />
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm text-slate-500 shrink-0">Temporary Password</span>
-                  <span className="text-sm font-mono font-bold text-teal-700 tracking-wide truncate">
+                  <span className="text-sm font-mono font-bold text-blue-700 tracking-wide truncate">
                     {result.temporary_password ?? '—'}
                   </span>
                 </div>

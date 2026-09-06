@@ -58,7 +58,6 @@ def _decode_token(token: str, settings: Settings) -> dict:
             settings.supabase_jwt_secret,
             algorithms=["HS256"],
             audience="authenticated",
-            options={"verify_aud": False},  # Supabase aud can vary; verify signature+exp
             leeway=30,  # tolerate clock drift between this host and Supabase
         )
 
@@ -69,7 +68,6 @@ def _decode_token(token: str, settings: Settings) -> dict:
             signing_key.key,
             algorithms=["ES256", "RS256"],
             audience="authenticated",
-            options={"verify_aud": False},
             leeway=30,  # tolerate clock drift between this host and Supabase
         )
 

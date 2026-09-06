@@ -91,13 +91,13 @@ function RoleCard({
     blue: 'bg-blue-50',
     green: 'bg-emerald-50',
     cyan: 'bg-cyan-50',
-    violet: 'bg-violet-50',
+    violet: 'bg-blue-50',
   };
   const text: Record<string, string> = {
     blue: 'text-blue-600',
     green: 'text-emerald-600',
     cyan: 'text-cyan-600',
-    violet: 'text-violet-600',
+    violet: 'text-blue-600',
   };
 
   return (
@@ -141,7 +141,7 @@ function SectionToggle({
           onClick={() => onSectionChange(key)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
             activeSection === key
-              ? 'bg-teal-50 text-teal-700'
+              ? 'bg-blue-50 text-blue-700'
               : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
           }`}
         >
@@ -171,7 +171,7 @@ function UserRow({
   onActivate?: (id: string) => void;
 }) {
   const roleIcons: Record<string, React.ElementType> = { admin: Crown, doctor: Stethoscope, radiologist: Brain, patient: User };
-  const roleColors: Record<string, string> = { admin: 'bg-violet-50 text-violet-700', doctor: 'bg-emerald-50 text-emerald-700', radiologist: 'bg-cyan-50 text-cyan-700', patient: 'bg-blue-50 text-blue-700' };
+  const roleColors: Record<string, string> = { admin: 'bg-blue-50 text-blue-700', doctor: 'bg-emerald-50 text-emerald-700', radiologist: 'bg-cyan-50 text-cyan-700', patient: 'bg-blue-50 text-blue-700' };
   const statusColors: Record<string, string> = { active: 'bg-emerald-50 text-emerald-700', suspended: 'bg-red-50 text-red-700', pending: 'bg-amber-50 text-amber-700' };
 
   const role = user.role || 'patient';
@@ -180,7 +180,7 @@ function UserRow({
   const statusColor = statusColors[user.account_status] || statusColors.pending;
 
   return (
-    <div className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-teal-300 hover:shadow-sm transition-all duration-300">
+    <div className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <div className={`p-2 rounded-lg ${roleColor.split(' ')[0]}`}>
@@ -224,8 +224,8 @@ function UserGridCard({
   onActivate?: (id: string) => void;
 }) {
   const roleIcons: Record<string, React.ElementType> = { admin: Crown, doctor: Stethoscope, radiologist: Brain, patient: User };
-  const roleBorderColors: Record<string, string> = { admin: 'border-violet-200', doctor: 'border-emerald-200', radiologist: 'border-cyan-200', patient: 'border-blue-200' };
-  const roleColors: Record<string, string> = { admin: 'bg-violet-50 text-violet-700', doctor: 'bg-emerald-50 text-emerald-700', radiologist: 'bg-cyan-50 text-cyan-700', patient: 'bg-blue-50 text-blue-700' };
+  const roleBorderColors: Record<string, string> = { admin: 'border-blue-200', doctor: 'border-emerald-200', radiologist: 'border-cyan-200', patient: 'border-blue-200' };
+  const roleColors: Record<string, string> = { admin: 'bg-blue-50 text-blue-700', doctor: 'bg-emerald-50 text-emerald-700', radiologist: 'bg-cyan-50 text-cyan-700', patient: 'bg-blue-50 text-blue-700' };
   const statusColors: Record<string, string> = { active: 'bg-emerald-50 text-emerald-700', suspended: 'bg-red-50 text-red-700', pending: 'bg-amber-50 text-amber-700' };
 
   const role = user.role || 'patient';
@@ -289,14 +289,14 @@ function VerificationCard({
     <SectionCard className="p-5">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-teal-50">
-            <Stethoscope className="h-5 w-5 text-teal-600" />
+          <div className="p-3 rounded-xl bg-blue-50">
+            <Stethoscope className="h-5 w-5 text-blue-600" />
           </div>
           <div>
             <h3 className="font-semibold text-slate-900">{doctor.full_name}</h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {doctor.specialization && (
-                <span className="px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 text-xs">{doctor.specialization}</span>
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs">{doctor.specialization}</span>
               )}
               {doctor.medical_license && (
                 <span className="text-xs text-slate-500">License: <span className="font-mono">{doctor.medical_license}</span></span>
@@ -370,7 +370,7 @@ function Pagination({
               aria-current={p === currentPage ? 'page' : undefined}
               size="sm"
               variant={p === currentPage ? 'default' : 'ghost'}
-              className={`h-8 w-8 p-0 text-xs ${p === currentPage ? 'bg-teal-600 hover:bg-teal-700' : ''}`}
+              className={`h-8 w-8 p-0 text-xs ${p === currentPage ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
               onClick={() => onPageChange(p)}
             >
               {p}
@@ -760,7 +760,7 @@ export const HospitalAdminDashboard: React.FC = () => {
       />
 
       <div className="flex justify-end">
-        <Button className="gap-2 bg-teal-600 hover:bg-teal-700" onClick={() => setIsCreateUserOpen(true)}>
+        <Button className="gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => setIsCreateUserOpen(true)}>
           <UserPlus className="h-4 w-4" />
           Create User
         </Button>
@@ -809,7 +809,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-slate-900">Patient Visits Timeline</h3>
                   <p className="text-xs text-slate-500">Daily diagnostic patient traffic this month</p>
                 </div>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-100 uppercase">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase">
                   Live Traffic
                 </span>
               </div>
@@ -845,7 +845,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                             <div className="bg-slate-900/95 backdrop-blur border border-slate-800 px-3 py-2 rounded-xl shadow-xl text-white">
                               <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{label}</p>
                               <p className="text-xs font-black mt-0.5 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                                 {payload[0].value} Visits
                               </p>
                             </div>
@@ -869,7 +869,7 @@ export const HospitalAdminDashboard: React.FC = () => {
           </SectionCard>
 
           {/* Quick Metrics sidebar card */}
-          <SectionCard className="p-5 xl:col-span-1 flex flex-col justify-between bg-gradient-to-br from-teal-950 to-slate-950 text-white border border-teal-500/20 shadow-md h-full">
+          <SectionCard className="p-5 xl:col-span-1 flex flex-col justify-between bg-slate-900 text-white border border-blue-500/20 shadow-md h-full">
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -886,7 +886,7 @@ export const HospitalAdminDashboard: React.FC = () => {
               <div className="border-t border-slate-800/80 pt-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-400">Daily Average</span>
-                  <span className="text-xs font-bold text-teal-400">
+                  <span className="text-xs font-bold text-blue-400">
                     {Math.round(patientVisitsData.reduce((acc, d) => acc + d.visits, 0) / patientVisitsData.length)} visits/day
                   </span>
                 </div>
@@ -965,7 +965,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                       })}`
                     : 'Recent Analysis Sessions'}
                 </h3>
-                <Link href="/admin/dashboard" className="text-xs font-medium text-teal-700 hover:underline">
+                <Link href="/admin/dashboard" className="text-xs font-medium text-blue-700 hover:underline">
                   Refresh List
                 </Link>
               </div>
@@ -1038,7 +1038,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                         onClick={() => setViewMode('grid')}
                         aria-label="Grid view"
                         aria-pressed={viewMode === 'grid'}
-                        className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'}`}
+                        className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-blue-50 text-blue-700' : 'text-slate-400 hover:bg-slate-50'}`}
                       >
                         <LayoutGrid className="h-4 w-4" />
                       </button>
@@ -1046,7 +1046,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                         onClick={() => setViewMode('list')}
                         aria-label="List view"
                         aria-pressed={viewMode === 'list'}
-                        className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-teal-50 text-teal-700' : 'text-slate-400 hover:bg-slate-50'}`}
+                        className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-400 hover:bg-slate-50'}`}
                       >
                         <List className="h-4 w-4" />
                       </button>
@@ -1056,13 +1056,13 @@ export const HospitalAdminDashboard: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className={`gap-1.5 ${showFilters || activeFilterCount > 0 ? 'border-teal-200 text-teal-700' : 'border-slate-200'}`}
+                      className={`gap-1.5 ${showFilters || activeFilterCount > 0 ? 'border-blue-200 text-blue-700' : 'border-slate-200'}`}
                       onClick={() => setShowFilters(!showFilters)}
                     >
                       <Filter className="h-3.5 w-3.5" />
                       Filters
                       {activeFilterCount > 0 && (
-                        <span className="ml-1 px-1.5 py-0.5 rounded-full bg-teal-600 text-white text-[10px] font-bold">{activeFilterCount}</span>
+                        <span className="ml-1 px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">{activeFilterCount}</span>
                       )}
                     </Button>
 
@@ -1071,7 +1071,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input
                         placeholder="Search users..."
-                        className="pl-9 h-9 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-teal-400"
+                        className="pl-9 h-9 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"
                         value={searchTerm}
                         onChange={(e) => updateFilter(setSearchTerm, e.target.value)}
                       />
@@ -1110,7 +1110,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                         <select
                           value={roleFilter}
                           onChange={(e) => updateFilter(setRoleFilter, e.target.value)}
-                          className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-teal-400"
+                          className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-blue-400"
                         >
                           <option value="all">All</option>
                           <option value="patient">Patient</option>
@@ -1124,7 +1124,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                         <select
                           value={statusFilter}
                           onChange={(e) => updateFilter(setStatusFilter, e.target.value)}
-                          className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-teal-400"
+                          className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-blue-400"
                         >
                           <option value="all">All</option>
                           <option value="active">Active</option>
@@ -1148,7 +1148,7 @@ export const HospitalAdminDashboard: React.FC = () => {
               {activeFilterCount > 0 && (
                 <div className="flex items-center gap-2 flex-wrap">
                   {roleFilter !== 'all' && (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-medium">
+                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                       Role: {roleFilter}
                       <button onClick={() => updateFilter(setRoleFilter, 'all')} aria-label="Clear role filter"><X className="h-3 w-3" /></button>
                     </span>
@@ -1190,8 +1190,8 @@ export const HospitalAdminDashboard: React.FC = () => {
               ) : paginatedUsers.length === 0 ? (
                 <SectionCard className="p-12">
                   <div className="text-center">
-                    <div className="p-4 rounded-full bg-teal-50 w-fit mx-auto mb-4">
-                      <Users className="h-8 w-8 text-teal-600" />
+                    <div className="p-4 rounded-full bg-blue-50 w-fit mx-auto mb-4">
+                      <Users className="h-8 w-8 text-blue-600" />
                     </div>
                     <p className="text-slate-900 font-medium mb-1">No users found</p>
                     <p className="text-sm text-slate-500">
@@ -1221,11 +1221,11 @@ export const HospitalAdminDashboard: React.FC = () => {
           {activeSection === 'verify' && (
             <SectionCard className="p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-teal-50">
-                  <AlertCircle className="h-5 w-5 text-teal-600" />
+                <div className="p-2 rounded-lg bg-blue-50">
+                  <AlertCircle className="h-5 w-5 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900">Doctor Verifications</h3>
-                <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 text-xs font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                   {stats.pendingVerifications} pending
                 </span>
               </div>
@@ -1267,7 +1267,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a doctor" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="max-h-60">
                       {doctorsLoading ? (
                         <SelectItem value="" disabled>Loading...</SelectItem>
                       ) : (
@@ -1286,7 +1286,7 @@ export const HospitalAdminDashboard: React.FC = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a patient" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="max-h-60">
                       {patientsLoading ? (
                         <SelectItem value="" disabled>Loading...</SelectItem>
                       ) : (
@@ -1353,7 +1353,7 @@ export const HospitalAdminDashboard: React.FC = () => {
           {/* Quick Stats */}
           <SectionCard className="p-4">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-teal-600" />
+              <Activity className="h-4 w-4 text-blue-600" />
               Quick Stats
             </h3>
             <div className="space-y-2">
@@ -1363,7 +1363,7 @@ export const HospitalAdminDashboard: React.FC = () => {
               </div>
               <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50">
                 <span className="text-xs text-slate-500">This Month</span>
-                <span className="text-sm font-bold text-teal-700">{scansLoading ? '—' : stats.scansThisMonth}</span>
+                <span className="text-sm font-bold text-blue-700">{scansLoading ? '—' : stats.scansThisMonth}</span>
               </div>
               <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50">
                 <span className="text-xs text-slate-500">Suspended</span>

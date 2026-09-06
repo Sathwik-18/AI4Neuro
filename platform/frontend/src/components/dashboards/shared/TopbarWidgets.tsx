@@ -3,12 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, User as UserIcon, KeyRound, LogOut, Loader2, Activity } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { analysisApi } from '@/features/analysis/api';
 import type { SessionStatusResponse } from '@/features/analysis/types';
 import { cn } from '@/lib/utils';
-import { ACCENT_STYLES, type Accent } from './primitives';
+import { MaterialIcon, BrainWaveLoader, type Accent } from './primitives';
 
 const LAST_SEEN_KEY = 'ai4neuro:notifications:last-seen';
 
@@ -28,23 +27,23 @@ function timeAgo(iso: string | null): string {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'completed':
-      return 'text-emerald-600';
+    case 'completed': return 'text-emerald-600';
     case 'failed':
-    case 'cancelled':
-      return 'text-red-600';
-    default:
-      return 'text-amber-600';
+    case 'cancelled': return 'text-red-600';
+    default: return 'text-amber-600';
   }
 }
 
-/**
- * Notification bell backed by real recent analysis activity from the backend.
- * The unread dot reflects sessions updated since the user last opened the
- * panel (persisted in localStorage) rather than being hardcoded.
- */
+function statusIcon(status: string): string {
+  switch (status) {
+    case 'completed': return 'check_circle';
+    case 'failed':
+    case 'cancelled': return 'error';
+    default: return 'pending';
+  }
+}
+
 export function NotificationBell({ accent }: { accent: Accent }) {
-  const styles = ACCENT_STYLES[accent];
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionStatusResponse[]>([]);
@@ -59,8 +58,6 @@ export function NotificationBell({ accent }: { accent: Accent }) {
   }, []);
 
   const load = useCallback(async () => {
-    // Only surface the loading spinner on the very first fetch; subsequent
-    // opens show the cached list immediately and refresh in the background.
     setLoading((prev) => (loadedRef.current ? prev : true));
     try {
       const rows = await analysisApi.list({ limit: 8 });
@@ -73,10 +70,7 @@ export function NotificationBell({ accent }: { accent: Accent }) {
     }
   }, []);
 
-  // Initial load so the unread dot is accurate before the panel is opened.
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -107,30 +101,28 @@ export function NotificationBell({ accent }: { accent: Accent }) {
       <button
         onClick={toggle}
         aria-label="Notifications"
-        className="relative w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700"
+        className="relative h-8 w-8 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
       >
-        <Bell className="h-4.5 w-4.5" />
+        <MaterialIcon name="notifications" size={20} />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white border border-slate-200 shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 rounded-lg bg-white border border-slate-200 shadow-lg z-50 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-900">Notifications</span>
-            <span className={cn('text-xs font-medium', styles.text)}>Recent analyses</span>
+            <span className="text-sm font-semibold text-slate-900">Activity</span>
+            <span className="text-xs text-slate-400">Recent analyses</span>
           </div>
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-72 overflow-y-auto">
             {loading && sessions.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-slate-400">
-                <Loader2 className="h-5 w-5 animate-spin" />
-              </div>
+              <BrainWaveLoader />
             ) : sessions.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-slate-500">
-                No recent analysis activity
+              <div className="px-4 py-8 text-center text-sm text-slate-400">
+                No recent activity
               </div>
             ) : (
               sessions.map((s) => (
@@ -140,15 +132,17 @@ export function NotificationBell({ accent }: { accent: Accent }) {
                     setOpen(false);
                     router.push(`/analysis/${s.id}`);
                   }}
-                  className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 text-left border-b border-slate-50 last:border-0"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-left border-b border-slate-50 last:border-0 transition-colors"
                 >
-                  <div className={cn('p-1.5 rounded-lg shrink-0', styles.soft)}>
-                    <Activity className={cn('h-3.5 w-3.5', styles.text)} />
-                  </div>
+                  <MaterialIcon
+                    name={statusIcon(s.status)}
+                    size={18}
+                    className={statusColor(s.status)}
+                  />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-slate-800 truncate">
-                      <span className="uppercase font-semibold">{s.modality}</span> analysis{' '}
-                      <span className={cn('font-medium capitalize', statusColor(s.status))}>{s.status}</span>
+                    <p className="text-xs text-slate-700 truncate">
+                      <span className="uppercase font-medium">{s.modality}</span>{' '}
+                      <span className={cn('capitalize', statusColor(s.status))}>{s.status}</span>
                     </p>
                     <p className="text-[10px] text-slate-400">{timeAgo(s.updated_at || s.created_at)}</p>
                   </div>
@@ -163,17 +157,10 @@ export function NotificationBell({ accent }: { accent: Accent }) {
 }
 
 function getInitials(name: string) {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
-/** Profile avatar with a working dropdown (Profile / Change Password / Logout). */
 export function ProfileMenu({ accent }: { accent: Accent }) {
-  const styles = ACCENT_STYLES[accent];
   const { user, userProfile, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -195,62 +182,65 @@ export function ProfileMenu({ accent }: { accent: Accent }) {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Account menu"
-        className="flex items-center gap-3 px-2.5 py-1.5 rounded-full hover:bg-slate-100/80 transition-colors"
+        className="flex items-center gap-2 px-1.5 py-1 rounded-md hover:bg-slate-50 transition-colors"
       >
-        <div
-          className={cn(
-            'w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 overflow-hidden border border-slate-200 shadow-sm',
-            !avatarUrl && styles.solid
-          )}
-        >
+        <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[11px] font-semibold shrink-0 overflow-hidden">
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
           ) : (
             initials
           )}
         </div>
-        <div className="hidden sm:block text-left">
-          <p className="text-sm font-bold text-slate-800 leading-none">{displayName}</p>
-          <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{user?.email || ''}</p>
+        <div className="hidden sm:flex flex-col leading-none">
+          <span className="text-[13px] font-medium text-slate-700 max-w-[140px] truncate">
+            {displayName}
+          </span>
+          <span className="text-[10px] text-slate-400 capitalize">
+            {userProfile?.role?.replace(/_/g, ' ') || 'User'}
+          </span>
         </div>
+        <MaterialIcon name="expand_more" size={16} className="text-slate-300 hidden sm:inline" />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-slate-200 shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 mt-1.5 w-56 rounded-lg bg-white border border-slate-200 shadow-lg z-50 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100">
-            <p className="text-sm font-semibold text-slate-900 truncate">{displayName}</p>
-            <p className="text-xs text-slate-500 capitalize">
-              {userProfile?.role?.replace(/_/g, ' ') || 'User'}
-            </p>
+            <p className="text-sm font-medium text-slate-900 truncate">{displayName}</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{user?.email || ''}</p>
           </div>
           <div className="py-1">
             <Link
               href="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              <UserIcon className="h-4 w-4 text-slate-400" />
+              <MaterialIcon name="person" size={17} className="text-slate-400" />
               Profile
+            </Link>
+            <Link
+              href="/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <MaterialIcon name="settings" size={17} className="text-slate-400" />
+              Settings
             </Link>
             <Link
               href="/change-password"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              <KeyRound className="h-4 w-4 text-slate-400" />
-              Change Password
+              <MaterialIcon name="key" size={17} className="text-slate-400" />
+              Change password
             </Link>
           </div>
           <div className="py-1 border-t border-slate-100">
             <button
-              onClick={() => {
-                setOpen(false);
-                signOut();
-              }}
-              className="flex items-center gap-2.5 w-full px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              onClick={() => { setOpen(false); signOut(); }}
+              className="flex items-center gap-2.5 w-full px-4 py-2 text-[13px] text-red-600 hover:bg-red-50 transition-colors"
             >
-              <LogOut className="h-4 w-4" />
-              Logout
+              <MaterialIcon name="logout" size={17} />
+              Sign out
             </button>
           </div>
         </div>

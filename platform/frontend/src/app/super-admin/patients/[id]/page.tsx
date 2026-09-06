@@ -108,7 +108,7 @@ function PatientProfilePageInner() {
         <>
           <SectionCard className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl font-bold shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
@@ -119,7 +119,7 @@ function PatientProfilePageInner() {
                 <p className="text-sm text-slate-500 mt-1">{patient.email} · {patient.phone}</p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <a href="#reports" className="px-4 py-2 rounded-xl text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                <a href="#reports" className="px-4 py-2 rounded-xl text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
                   Download Reports
                 </a>
               </div>
@@ -157,7 +157,7 @@ function PatientProfilePageInner() {
 
             <SectionCard className="p-5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <Stethoscope className="h-4 w-4 text-indigo-600" />
+                <Stethoscope className="h-4 w-4 text-blue-600" />
                 Care Team
               </h3>
               <div className="space-y-2">
@@ -168,7 +168,7 @@ function PatientProfilePageInner() {
 
             <SectionCard className="p-5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <Building2 className="h-4 w-4 text-teal-600" />
+                <Building2 className="h-4 w-4 text-blue-600" />
                 Associated Hospital
               </h3>
               <div className="space-y-2">
@@ -179,7 +179,7 @@ function PatientProfilePageInner() {
 
           <SectionCard className="p-5">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-              <Calendar className="h-4 w-4 text-indigo-600" />
+              <Calendar className="h-4 w-4 text-blue-600" />
               Timeline
             </h3>
             {timeline.length === 0 ? (
@@ -192,7 +192,7 @@ function PatientProfilePageInner() {
                       {s.modality === 'eeg' ? (
                         <Waves className="h-4 w-4 text-blue-500" />
                       ) : (
-                        <Brain className="h-4 w-4 text-teal-600" />
+                        <Brain className="h-4 w-4 text-blue-600" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -212,7 +212,7 @@ function PatientProfilePageInner() {
 
           <SectionCard id="reports" className="p-5 scroll-mt-4">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-              <Brain className="h-4 w-4 text-teal-600" />
+              <Brain className="h-4 w-4 text-blue-600" />
               MRI History
             </h3>
             <SessionsTable

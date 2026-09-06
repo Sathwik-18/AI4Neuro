@@ -29,9 +29,6 @@ import {
   ArrowUpDown,
   Filter,
   CalendarDays,
-  Settings,
-  ScanLine,
-  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { DashboardShell } from '@/components/dashboards/shared/DashboardShell';
@@ -72,11 +69,11 @@ function SessionRow({
   const prediction = session.prediction?.prediction;
 
   return (
-    <div className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition-all duration-300">
+    <div className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0 flex-1">
-          <div className="p-2 rounded-lg bg-indigo-50 shrink-0">
-            <Brain className="h-5 w-5 text-indigo-600" />
+          <div className="p-2 rounded-lg bg-blue-50 shrink-0">
+            <Brain className="h-5 w-5 text-blue-600" />
           </div>
           <div className="min-w-0">
             <p className="font-medium text-slate-900 truncate">{session.session_code}</p>
@@ -103,11 +100,11 @@ function SessionRow({
           <div className="flex gap-1">
             {(session.status === 'completed' || session.status === 'reviewed') && (
               <>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-indigo-50" asChild>
-                  <Link href={`/radiologist/viewer/${session.id}`}><Eye className="h-4 w-4 text-indigo-600" /></Link>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-blue-50" asChild>
+                  <Link href={`/radiologist/viewer/${session.id}`}><Eye className="h-4 w-4 text-blue-600" /></Link>
                 </Button>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-violet-50" onClick={() => onViewReport(session)}>
-                  <Download className="h-4 w-4 text-violet-600" />
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-blue-50" onClick={() => onViewReport(session)}>
+                  <Download className="h-4 w-4 text-blue-600" />
                 </Button>
               </>
             )}
@@ -159,7 +156,7 @@ function ScanGridCard({
     <SectionCard className={`p-4 h-full flex flex-col ${pColor ? pColor.border : 'border-slate-200'}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Brain className="h-4 w-4 text-indigo-600" />
+          <Brain className="h-4 w-4 text-blue-600" />
           <span className="text-sm font-semibold text-slate-900 truncate">{session.session_code}</span>
         </div>
         {prediction && pColor && (
@@ -200,10 +197,10 @@ function ScanGridCard({
       <div className="flex gap-1.5 pt-2 border-t border-slate-100">
         {isCompleted && (
           <>
-            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-indigo-200 text-indigo-700 hover:bg-indigo-50" asChild>
+            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50" asChild>
               <Link href={`/radiologist/viewer/${session.id}`}><Eye className="h-3 w-3" />View</Link>
             </Button>
-            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-violet-200 text-violet-700 hover:bg-violet-50" onClick={() => onViewReport(session)}>
+            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => onViewReport(session)}>
               <FileText className="h-3 w-3" />Reports
             </Button>
           </>
@@ -262,7 +259,7 @@ function MiniCalendar({
     <SectionCard className="p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-indigo-600" />
+          <CalendarDays className="h-4 w-4 text-blue-600" />
           {monthName}
         </h3>
         <div className="flex gap-1">
@@ -294,7 +291,7 @@ function MiniCalendar({
               onClick={() => onSelectDate(sel ? null : new Date(year, month, day))}
               className={`relative text-xs py-1.5 rounded transition-all ${
                 sel
-                  ? 'bg-indigo-600 text-white font-bold'
+                  ? 'bg-blue-600 text-white font-bold'
                   : today
                   ? 'bg-slate-100 text-slate-900 font-medium'
                   : 'text-slate-500 hover:bg-slate-50'
@@ -302,7 +299,7 @@ function MiniCalendar({
             >
               {day}
               {hasScan && !sel && (
-                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-500" />
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-500" />
               )}
             </button>
           );
@@ -312,7 +309,7 @@ function MiniCalendar({
       {selectedDate && (
         <button
           onClick={() => onSelectDate(null)}
-          className="mt-2 w-full text-xs text-indigo-600 hover:text-indigo-700 transition-colors"
+          className="mt-2 w-full text-xs text-blue-600 hover:text-blue-700 transition-colors"
         >
           Clear date filter
         </button>
@@ -367,7 +364,7 @@ function Pagination({
               key={p}
               size="sm"
               variant={p === currentPage ? 'default' : 'ghost'}
-              className={`h-8 w-8 p-0 text-xs ${p === currentPage ? 'bg-indigo-600 hover:bg-indigo-700' : ''}`}
+              className={`h-8 w-8 p-0 text-xs ${p === currentPage ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
               onClick={() => onPageChange(p)}
             >
               {p}
@@ -601,10 +598,10 @@ export const RadiologistDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SectionCard className="p-5 lg:col-span-2 flex items-center justify-between flex-wrap gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Quick Actions</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Quick Actions</p>
             <p className="text-lg font-semibold text-slate-900 mt-1">Upload scans and review AI results</p>
           </div>
-          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700" asChild>
+          <Button className="gap-2 bg-blue-600 hover:bg-blue-700" asChild>
             <Link href="/radiologist/upload">
               <Upload className="h-4 w-4" />
               Upload Scans
@@ -633,13 +630,13 @@ export const RadiologistDashboard: React.FC = () => {
                 <div className="flex rounded-lg border border-slate-200 overflow-hidden">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-400 hover:bg-slate-50'}`}
+                    className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-blue-50 text-blue-700' : 'text-slate-400 hover:bg-slate-50'}`}
                   >
                     <LayoutGrid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-400 hover:bg-slate-50'}`}
+                    className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-blue-50 text-blue-700' : 'text-slate-400 hover:bg-slate-50'}`}
                   >
                     <List className="h-4 w-4" />
                   </button>
@@ -649,13 +646,13 @@ export const RadiologistDashboard: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`gap-1.5 ${showFilters || activeFilterCount > 0 ? 'border-indigo-200 text-indigo-700' : 'border-slate-200'}`}
+                  className={`gap-1.5 ${showFilters || activeFilterCount > 0 ? 'border-blue-200 text-blue-700' : 'border-slate-200'}`}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="h-3.5 w-3.5" />
                   Filters
                   {activeFilterCount > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-bold">
                       {activeFilterCount}
                     </span>
                   )}
@@ -666,7 +663,7 @@ export const RadiologistDashboard: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     placeholder="Search by session or patient..."
-                    className="pl-9 h-9 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400"
+                    className="pl-9 h-9 bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"
                     value={searchTerm}
                     onChange={(e) => updateFilter(setSearchTerm, e.target.value)}
                   />
@@ -701,7 +698,7 @@ export const RadiologistDashboard: React.FC = () => {
                     <select
                       value={statusFilter}
                       onChange={(e) => updateFilter(setStatusFilter, e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-indigo-400"
+                      className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-blue-400"
                     >
                       <option value="all">All</option>
                       <option value="completed">Completed</option>
@@ -716,7 +713,7 @@ export const RadiologistDashboard: React.FC = () => {
                     <select
                       value={predictionFilter}
                       onChange={(e) => updateFilter(setPredictionFilter, e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-indigo-400"
+                      className="bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-700 px-2 py-1 outline-none focus:border-blue-400"
                     >
                       <option value="all">All</option>
                       <option value="CN">CN - Normal</option>
@@ -747,13 +744,13 @@ export const RadiologistDashboard: React.FC = () => {
           {activeFilterCount > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
               {statusFilter !== 'all' && (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                   Status: {statusFilter}
                   <button onClick={() => updateFilter(setStatusFilter, 'all')}><X className="h-3 w-3" /></button>
                 </span>
               )}
               {predictionFilter !== 'all' && (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-medium">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                   Prediction: {predictionFilter}
                   <button onClick={() => updateFilter(setPredictionFilter, 'all')}><X className="h-3 w-3" /></button>
                 </span>
@@ -795,8 +792,8 @@ export const RadiologistDashboard: React.FC = () => {
           ) : paginatedSessions.length === 0 ? (
             <SectionCard className="p-12">
               <div className="text-center">
-                <div className="p-4 rounded-full bg-indigo-50 w-fit mx-auto mb-4">
-                  <Brain className="h-8 w-8 text-indigo-600" />
+                <div className="p-4 rounded-full bg-blue-50 w-fit mx-auto mb-4">
+                  <Brain className="h-8 w-8 text-blue-600" />
                 </div>
                 <p className="text-slate-900 font-medium mb-1">No sessions found</p>
                 <p className="text-sm text-slate-500">
@@ -857,7 +854,7 @@ export const RadiologistDashboard: React.FC = () => {
           {/* Recent Activity */}
           <SectionCard className="p-4">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-indigo-600" />
+              <Activity className="h-4 w-4 text-blue-600" />
               Recent Activity
             </h3>
             <div className="space-y-2">
@@ -892,7 +889,7 @@ export const RadiologistDashboard: React.FC = () => {
           {/* Prediction Distribution */}
           <SectionCard className="p-4">
             <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-3">
-              <Brain className="h-4 w-4 text-violet-600" />
+              <Brain className="h-4 w-4 text-blue-600" />
               Prediction Distribution
             </h3>
             <div className="space-y-2">

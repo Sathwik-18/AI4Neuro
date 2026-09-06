@@ -386,7 +386,7 @@ export function AnalysisUploadForm() {
         accent={accent}
       />
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[280px_minmax(0,1fr)_320px] items-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_280px] items-start">
         {/* ================= MODALITY RAIL ================= */}
         <SectionCard className="p-4 space-y-3 xl:sticky xl:top-24">
           <p className="px-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -401,7 +401,7 @@ export function AnalysisUploadForm() {
                 type="button"
                 onClick={() => onModalityChange(item)}
                 className={cn(
-                  'w-full rounded-xl border bg-white p-4 text-left shadow-sm transition',
+                  'w-full rounded-lg border bg-white p-4 text-left shadow-sm transition',
                   selected ? cn('ring-2', accentStyles.ring, 'border-transparent') : 'border-slate-200 hover:border-slate-300'
                 )}
               >
@@ -563,7 +563,7 @@ export function AnalysisUploadForm() {
                 onDrop={onDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-6 py-10 text-center cursor-pointer transition-colors',
+                  'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-10 text-center cursor-pointer transition-colors',
                   dragActive ? cn(accentStyles.soft, accentStyles.ring, 'border-transparent ring-2') : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
                 )}
               >

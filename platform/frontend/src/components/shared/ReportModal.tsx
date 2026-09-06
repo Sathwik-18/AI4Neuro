@@ -10,7 +10,7 @@ type ReportModalRole = 'doctor' | 'radiologist' | 'patient';
 
 const ROLE_STYLES: Record<ReportModalRole, { iconBg: string; iconColor: string; titlePrefix: string }> = {
   doctor: { iconBg: 'bg-blue-50', iconColor: 'text-blue-600', titlePrefix: 'Reports' },
-  radiologist: { iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', titlePrefix: 'Reports' },
+  radiologist: { iconBg: 'bg-blue-50', iconColor: 'text-blue-600', titlePrefix: 'Reports' },
   patient: { iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600', titlePrefix: 'Report' },
 };
 

@@ -246,7 +246,7 @@ export default function LoginPage() {
 
           {/* Right Panel - Visual (hidden on mobile) */}
           <div className="hidden lg:block">
-            <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 p-8">
+            <div className="rounded-3xl bg-gradient-to-br from-blue-50 to-blue-50 border border-blue-100 p-8">
               <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Unified clinical workspace</p>
               <h2 className="mt-3 text-2xl font-extrabold text-slate-900">One login for every diagnostic lane</h2>
               <p className="mt-3 text-slate-500 leading-relaxed">
@@ -264,8 +264,8 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="rounded-xl bg-white p-4 flex items-center gap-3 shadow-sm">
-                  <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center shrink-0">
-                    <ScanLine className="h-4.5 w-4.5 text-teal-600" />
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                    <ScanLine className="h-4.5 w-4.5 text-blue-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-slate-900 text-sm">MRI flow</div>
@@ -273,8 +273,8 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div className="rounded-xl bg-white p-4 flex items-center gap-3 shadow-sm opacity-60">
-                  <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-                    <Brain className="h-4.5 w-4.5 text-violet-600" />
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                    <Brain className="h-4.5 w-4.5 text-blue-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-slate-900 text-sm">PET flow</div>

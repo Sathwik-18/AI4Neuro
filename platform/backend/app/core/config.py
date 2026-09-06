@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     # When true, the JWT guard accepts requests without a valid token and injects a
     # dev principal. Lets the foundation run before Phase 5 (full auth) lands.
     # MUST be false in production.
-    auth_dev_bypass: bool = Field(default=True, alias="AUTH_DEV_BYPASS")
+    auth_dev_bypass: bool = Field(default=False, alias="AUTH_DEV_BYPASS")
 
     # ---- EEG pipeline (Phase 2) ----
     eeg_siddhi_dir: str = Field(

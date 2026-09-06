@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { clampPageSize } from './index';
 import type { ApiResponse, PaginatedResponse, FilterOptions } from './index';
 
 export interface Doctor {
@@ -57,11 +58,11 @@ class DoctorsApi {
     try {
       const {
         page = 1,
-        pageSize = 10,
         sortBy = 'created_at',
         sortOrder = 'desc',
         search = '',
       } = options;
+      const pageSize = clampPageSize(options.pageSize);
 
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
@@ -81,7 +82,8 @@ class DoctorsApi {
         `, { count: 'exact' });
 
       if (search) {
-        query = query.or(`doctor_code.ilike.%${search}%,specialization.ilike.%${search}%`);
+        const sanitized = search.replace(/[%_(),.]/g, '');
+        query = query.or(`doctor_code.ilike.%${sanitized}%,specialization.ilike.%${sanitized}%`);
       }
 
       query = query
@@ -141,33 +143,34 @@ class DoctorsApi {
 
       if (doctorError) throw doctorError;
 
-      // Get assigned patients count
-      const { count: patientsCount } = await this.supabase
-        .from('doctor_assignments')
-        .select('*', { count: 'exact', head: true })
-        .eq('doctor_id', id)
-        .eq('status', 'active');
-
-      // Get pending reviews count
-      const { count: pendingCount } = await this.supabase
-        .from('mri_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('doctor_id', id)
-        .eq('status', 'completed');
-
-      // Get assigned patients list
-      const { data: assignments } = await this.supabase
-        .from('doctor_assignments')
-        .select(`
-          patient:patient_profiles(
-            id,
-            patient_code,
-            user_profile:user_profiles(full_name)
-          )
-        `)
-        .eq('doctor_id', id)
-        .eq('status', 'active')
-        .limit(10);
+      const [
+        { count: patientsCount },
+        { count: pendingCount },
+        { data: assignments },
+      ] = await Promise.all([
+        this.supabase
+          .from('doctor_patient_relationships')
+          .select('*', { count: 'exact', head: true })
+          .eq('doctor_id', id)
+          .eq('relationship_status', 'active'),
+        this.supabase
+          .from('analysis_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('doctor_id', id)
+          .eq('status', 'completed'),
+        this.supabase
+          .from('doctor_patient_relationships')
+          .select(`
+            patient:patient_profiles!doctor_patient_relationships_patient_id_fkey(
+              id,
+              patient_id,
+              user_profile:user_profiles(full_name)
+            )
+          `)
+          .eq('doctor_id', id)
+          .eq('relationship_status', 'active')
+          .limit(10),
+      ]);
 
       const result: DoctorWithPatients = {
         ...doctor,
@@ -203,26 +206,27 @@ class DoctorsApi {
    */
   async getDoctorPatients(doctorId: string, options: FilterOptions = {}): Promise<ApiResponse<PaginatedResponse<any>>> {
     try {
-      const { page = 1, pageSize = 10 } = options;
+      const { page = 1 } = options;
+      const pageSize = clampPageSize(options.pageSize);
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
       const { data, error, count } = await this.supabase
-        .from('doctor_assignments')
+        .from('doctor_patient_relationships')
         .select(`
           id,
-          assigned_date,
-          status,
-          patient:patient_profiles(
+          assigned_at,
+          relationship_status,
+          patient:patient_profiles!doctor_patient_relationships_patient_id_fkey(
             id,
-            patient_code,
+            patient_id,
             age,
             gender,
             user_profile:user_profiles(full_name, email)
           )
         `, { count: 'exact' })
         .eq('doctor_id', doctorId)
-        .eq('status', 'active')
+        .eq('relationship_status', 'active')
         .range(from, to);
 
       if (error) throw error;
@@ -233,7 +237,7 @@ class DoctorsApi {
           : a.patient?.user_profile;
         return {
           assignment_id: a.id,
-          assigned_date: a.assigned_date,
+          assigned_date: a.assigned_at,
           ...a.patient,
           full_name: userProfile?.full_name,
           email: userProfile?.email,
@@ -268,13 +272,12 @@ class DoctorsApi {
       const { data: { user } } = await this.supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if assignment already exists
       const { data: existing } = await this.supabase
-        .from('doctor_assignments')
+        .from('doctor_patient_relationships')
         .select('id')
         .eq('doctor_id', doctorId)
         .eq('patient_id', patientId)
-        .eq('status', 'active')
+        .eq('relationship_status', 'active')
         .single();
 
       if (existing) {
@@ -285,14 +288,21 @@ class DoctorsApi {
         };
       }
 
+      const { data: userProfile } = await this.supabase
+        .from('user_profiles')
+        .select('hospital_id')
+        .eq('id', doctorId)
+        .single();
+
       const { data, error } = await this.supabase
-        .from('doctor_assignments')
+        .from('doctor_patient_relationships')
         .insert({
           doctor_id: doctorId,
           patient_id: patientId,
+          hospital_id: userProfile?.hospital_id,
           assigned_by: user.id,
-          assigned_date: new Date().toISOString(),
-          status: 'active',
+          assigned_at: new Date().toISOString(),
+          relationship_status: 'active',
         })
         .select()
         .single();
@@ -319,11 +329,11 @@ class DoctorsApi {
   async unassignPatient(doctorId: string, patientId: string): Promise<ApiResponse<any>> {
     try {
       const { error } = await this.supabase
-        .from('doctor_assignments')
-        .update({ status: 'inactive' })
+        .from('doctor_patient_relationships')
+        .update({ relationship_status: 'inactive' })
         .eq('doctor_id', doctorId)
         .eq('patient_id', patientId)
-        .eq('status', 'active');
+        .eq('relationship_status', 'active');
 
       if (error) throw error;
 
@@ -372,30 +382,31 @@ class DoctorsApi {
    */
   async getAllAssignments(options: FilterOptions = {}): Promise<ApiResponse<PaginatedResponse<any>>> {
     try {
-      const { page = 1, pageSize = 20 } = options;
+      const { page = 1 } = options;
+      const pageSize = clampPageSize(options.pageSize, 20);
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
       const { data, error, count } = await this.supabase
-        .from('doctor_assignments')
+        .from('doctor_patient_relationships')
         .select(`
           id,
-          assigned_date,
-          status,
-          doctor:doctor_profiles(
+          assigned_at,
+          relationship_status,
+          doctor:doctor_profiles!doctor_patient_relationships_doctor_id_fkey(
             id,
             doctor_code,
             specialization,
             user_profile:user_profiles(full_name)
           ),
-          patient:patient_profiles(
+          patient:patient_profiles!doctor_patient_relationships_patient_id_fkey(
             id,
-            patient_code,
+            patient_id,
             user_profile:user_profiles(full_name)
           )
         `, { count: 'exact' })
-        .eq('status', 'active')
-        .order('assigned_date', { ascending: false })
+        .eq('relationship_status', 'active')
+        .order('assigned_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
@@ -409,8 +420,8 @@ class DoctorsApi {
           : a.patient?.user_profile;
         return {
           id: a.id,
-          assigned_date: a.assigned_date,
-          status: a.status,
+          assigned_date: a.assigned_at,
+          status: a.relationship_status,
           doctor_id: a.doctor?.id,
           doctor_code: a.doctor?.doctor_code,
           doctor_name: doctorProfile?.full_name || 'Unknown Doctor',

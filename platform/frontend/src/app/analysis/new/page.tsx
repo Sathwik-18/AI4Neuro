@@ -7,9 +7,7 @@ import { withAuth } from '@/lib/withAuth';
 function NewAnalysisPage() {
   return (
     <RoleShell>
-      <div className="py-2">
-        <AnalysisUploadForm />
-      </div>
+      <AnalysisUploadForm />
     </RoleShell>
   );
 }

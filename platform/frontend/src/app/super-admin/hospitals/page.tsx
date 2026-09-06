@@ -190,7 +190,7 @@ function CreateHospitalDialog({
           <Button
             onClick={handleSubmit}
             disabled={saving || !canSubmit}
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+            className="bg-blue-600 hover:bg-blue-700 gap-2"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Create Hospital
@@ -292,7 +292,7 @@ function EditHospitalDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
           </Button>
         </DialogFooter>
@@ -499,10 +499,10 @@ function HospitalsPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search hospitals…"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
-            <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700" onClick={() => setCreateOpen(true)}>
+            <Button className="gap-2 bg-blue-600 hover:bg-blue-700" onClick={() => setCreateOpen(true)}>
               <Plus className="h-4 w-4" />
               Add Hospital
             </Button>
@@ -546,14 +546,14 @@ function HospitalsPage() {
                         className="flex items-center gap-2.5 group"
                         title={`View ${h.name} details`}
                       >
-                        <div className="p-1.5 rounded-lg bg-indigo-50 shrink-0">
-                          <Building2 className="h-4 w-4 text-indigo-600" />
+                        <div className="p-1.5 rounded-lg bg-blue-50 shrink-0">
+                          <Building2 className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-indigo-700 group-hover:underline truncate">{h.name}</p>
+                          <p className="font-medium text-blue-700 group-hover:underline truncate">{h.name}</p>
                           <p className="text-xs text-slate-500 truncate">{h.address}</p>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 shrink-0" />
+                        <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-blue-500 shrink-0" />
                       </Link>
                     </td>
                     <td className="py-3 pr-4 font-mono text-xs text-slate-600">{h.hospital_code}</td>

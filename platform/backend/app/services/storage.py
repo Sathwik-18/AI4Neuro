@@ -32,7 +32,10 @@ class StorageService:
     # ------------------------------ raw files ------------------------------ #
 
     def raw_file_path(self, modality: str, session_id: str, filename: str) -> str:
-        return f"{modality}/{session_id}/{filename}"
+        safe_name = os.path.basename(filename).lstrip(".")
+        if not safe_name:
+            safe_name = "upload"
+        return f"{modality}/{session_id}/{safe_name}"
 
     def upload_raw_file(
         self, *, modality: str, session_id: str, filename: str, data: bytes

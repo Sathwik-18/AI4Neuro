@@ -139,8 +139,8 @@ function SessionRow({
                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-blue-50" asChild>
                   <Link href={`/doctor/viewer/${session.id}`}><Eye className="h-4 w-4 text-blue-600" /></Link>
                 </Button>
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-teal-50" onClick={() => onViewReport(session)}>
-                  <Download className="h-4 w-4 text-teal-600" />
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-blue-50" onClick={() => onViewReport(session)}>
+                  <Download className="h-4 w-4 text-blue-600" />
                 </Button>
               </>
             )}
@@ -229,7 +229,7 @@ function ScanGridCard({
             <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50" asChild>
               <Link href={`/doctor/viewer/${session.id}`}><Eye className="h-3 w-3" />View</Link>
             </Button>
-            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-teal-200 text-teal-700 hover:bg-teal-50" onClick={() => onViewReport(session)}>
+            <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 border-blue-200 text-blue-700 hover:bg-blue-50" onClick={() => onViewReport(session)}>
               <FileText className="h-3 w-3" />Reports
             </Button>
           </>
@@ -859,13 +859,13 @@ export const DoctorDashboard: React.FC = () => {
                 </span>
               )}
               {predictionFilter !== 'all' && (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-medium">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                   Prediction: {predictionFilter}
                   <button onClick={() => updateFilter(setPredictionFilter, 'all')}><X className="h-3 w-3" /></button>
                 </span>
               )}
               {selectedDate && (
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
                   Date: {selectedDate.toLocaleDateString()}
                   <button onClick={() => updateFilter(setSelectedDate, null)}><X className="h-3 w-3" /></button>
                 </span>

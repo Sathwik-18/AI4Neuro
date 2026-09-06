@@ -83,7 +83,7 @@ function AnalyticsPage() {
           <select
             value={hospitalId}
             onChange={(e) => setHospitalId(e.target.value)}
-            className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
             <option value="">All Hospitals</option>
             {hospitals.map((h) => (
@@ -126,7 +126,7 @@ function AnalyticsPage() {
                       <div className="bg-slate-900/95 backdrop-blur border border-slate-800 px-3 py-2 rounded-xl shadow-xl text-white">
                         <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">{label}</p>
                         <p className="text-xs font-black mt-0.5 flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                           {payload[0].value} Scans
                         </p>
                       </div>

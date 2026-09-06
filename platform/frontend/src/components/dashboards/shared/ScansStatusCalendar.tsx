@@ -39,18 +39,18 @@ export function ScansStatusCalendar({
         ring: 'ring-blue-500',
       },
       indigo: {
-        light: 'bg-indigo-50 border-indigo-100 hover:border-indigo-300',
-        medium: 'bg-indigo-200 border-indigo-300 hover:border-indigo-400',
-        dark: 'bg-indigo-500 border-indigo-600 hover:border-indigo-700',
-        active: 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100',
-        ring: 'ring-indigo-500',
+        light: 'bg-blue-50 border-blue-100 hover:border-blue-300',
+        medium: 'bg-blue-200 border-blue-300 hover:border-blue-400',
+        dark: 'bg-blue-500 border-blue-600 hover:border-blue-700',
+        active: 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100',
+        ring: 'ring-blue-500',
       },
       teal: {
-        light: 'bg-teal-50 border-teal-100 hover:border-teal-300',
-        medium: 'bg-teal-200 border-teal-300 hover:border-teal-400',
-        dark: 'bg-teal-500 border-teal-600 hover:border-teal-700',
-        active: 'bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-100',
-        ring: 'ring-teal-500',
+        light: 'bg-blue-50 border-blue-100 hover:border-blue-300',
+        medium: 'bg-blue-200 border-blue-300 hover:border-blue-400',
+        dark: 'bg-blue-500 border-blue-600 hover:border-blue-700',
+        active: 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-100',
+        ring: 'ring-blue-500',
       },
       green: {
         light: 'bg-emerald-50 border-emerald-100 hover:border-emerald-300',
@@ -215,7 +215,7 @@ export function ScansStatusCalendar({
                   }}
                   className={cn(
                     "w-full text-left px-3 py-2 text-xs font-medium hover:bg-slate-50 transition-colors",
-                    opt.getMonth() === month && opt.getFullYear() === year ? "text-indigo-600 bg-indigo-50/50" : "text-slate-700"
+                    opt.getMonth() === month && opt.getFullYear() === year ? "text-blue-600 bg-blue-50/50" : "text-slate-700"
                   )}
                 >
                   {opt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}

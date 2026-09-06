@@ -135,10 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (profile) {
-        // Role-detail table per role. NOTE: these tables are keyed by user_id
-        // and have NO hospital FK — the hospital lives on user_profiles — so we
-        // must NOT try to join hospitals() here (that join errors and nulls the
-        // whole roleProfile). The hospital name is resolved separately below.
         const ROLE_TABLE: Record<string, string> = {
           doctor: 'doctor_profiles',
           radiologist: 'radiologist_profiles',
@@ -146,36 +142,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           admin: 'hospital_admin_profiles',
           super_admin: 'super_admin_profiles',
         };
-        let roleProfile: RoleProfile = {};
         const table = ROLE_TABLE[profile.role as string];
-        if (table) {
-          try {
-            const { data } = await supabase.from(table).select('*').eq('user_id', currentUser.id).maybeSingle();
-            if (data) roleProfile = { ...(data as RoleProfile) };
-          } catch {
-            // Keep the empty roleProfile if the role table read fails.
-          }
-        }
-        // Resolve blood type for patients (patient_profiles.blood_group_id -> blood_groups.blood_type).
-        const bloodGroupId = roleProfile.blood_group_id;
-        if (profile.role === 'patient' && bloodGroupId) {
+
+        // Fire all independent lookups in parallel
+        const [roleResult, hospitalResult] = await Promise.all([
+          table
+            ? supabase.from(table).select('*').eq('user_id', currentUser.id).maybeSingle().catch(() => ({ data: null }))
+            : Promise.resolve({ data: null }),
+          profile.hospital_id
+            ? supabase.from('hospitals').select('name').eq('id', profile.hospital_id).maybeSingle().catch(() => ({ data: null }))
+            : Promise.resolve({ data: null }),
+        ]);
+
+        let roleProfile: RoleProfile = roleResult.data ? { ...(roleResult.data as RoleProfile) } : {};
+
+        // Blood type lookup depends on roleProfile.blood_group_id from the first query
+        if (profile.role === 'patient' && roleProfile.blood_group_id) {
           try {
             const { data: bg } = await supabase
-              .from('blood_groups').select('blood_type').eq('id', bloodGroupId).maybeSingle();
+              .from('blood_groups').select('blood_type').eq('id', roleProfile.blood_group_id).maybeSingle();
             if (bg?.blood_type) roleProfile = { ...roleProfile, blood_type: bg.blood_type };
           } catch {}
         }
-        // Resolve the hospital NAME from user_profiles.hospital_id so every
-        // role's profile page shows its hospital (not "Not provided").
-        if (profile.hospital_id) {
-          try {
-            const { data: h } = await supabase
-              .from('hospitals').select('name').eq('id', profile.hospital_id).maybeSingle();
-            if (h?.name) {
-              roleProfile = { ...roleProfile, hospital_id: profile.hospital_id, hospital_name: h.name };
-            }
-          } catch {}
+
+        if (hospitalResult.data?.name) {
+          roleProfile = { ...roleProfile, hospital_id: profile.hospital_id, hospital_name: hospitalResult.data.name };
         }
+
         return { ...profile, roleProfile };
       }
 
@@ -206,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        console.log('Auth init...');
+        if (process.env.NODE_ENV === 'development') console.log('Auth init...');
 
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
@@ -223,14 +216,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (currentSession?.user) {
-          console.log('Session found for:', currentSession.user.email);
+          if (process.env.NODE_ENV === 'development') console.log('Session found');
           setSession(currentSession);
           setUser(currentSession.user);
 
           // FAST: Get profile from metadata immediately
           const metadataProfile = getProfileFromMetadata(currentSession.user);
           if (metadataProfile) {
-            console.log('Using metadata profile:', metadataProfile.role);
+            if (process.env.NODE_ENV === 'development') console.log('Using metadata profile');
             setUserProfile(metadataProfile);
             setLoading(false);
 
@@ -242,7 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
           } else {
             // Fallback: Try DB query if no metadata
-            console.log('No metadata, trying DB...');
+            if (process.env.NODE_ENV === 'development') console.log('No metadata, trying DB...');
             const dbProfile = await fetchFullProfile(currentSession.user);
             if (mounted) {
               setUserProfile(dbProfile);
@@ -250,7 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } else {
-          console.log('No session');
+          if (process.env.NODE_ENV === 'development') console.log('No session');
           setLoading(false);
         }
       } catch (error) {
@@ -275,7 +268,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentSession: Session | null
     ) => {
       if (!mounted) return;
-      console.log('Auth event:', event);
+      if (process.env.NODE_ENV === 'development') console.log('Auth event:', event);
 
       if (event === 'SIGNED_IN' && currentSession?.user) {
         setSession(currentSession);

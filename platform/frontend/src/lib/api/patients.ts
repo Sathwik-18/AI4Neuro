@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
+import { clampPageSize } from './index';
 import type { ApiResponse, PaginatedResponse, FilterOptions } from './index';
 
 export interface Patient {
@@ -63,16 +64,15 @@ class PatientsApi {
     try {
       const {
         page = 1,
-        pageSize = 10,
         sortBy = 'created_at',
         sortOrder = 'desc',
         search = '',
       } = options;
+      const pageSize = clampPageSize(options.pageSize);
 
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      // Build query
       let query = this.supabase
         .from('patient_profiles')
         .select(`
@@ -88,7 +88,8 @@ class PatientsApi {
 
       // Apply search filter
       if (search) {
-        query = query.or(`patient_code.ilike.%${search}%,user_profile.full_name.ilike.%${search}%`);
+        const sanitized = search.replace(/[%_(),.]/g, '');
+        query = query.or(`patient_code.ilike.%${sanitized}%,user_profile.full_name.ilike.%${sanitized}%`);
       }
 
       // Apply sorting and pagination
@@ -150,35 +151,38 @@ class PatientsApi {
 
       if (patientError) throw patientError;
 
-      // Get sessions count and latest session
-      const { data: sessions, error: sessionsError } = await this.supabase
-        .from('mri_sessions')
-        .select(`
-          id,
-          session_code,
-          status,
-          scan_date,
-          predictions:mri_predictions(prediction)
-        `)
-        .eq('patient_id', id)
-        .order('scan_date', { ascending: false })
-        .limit(5);
+      const [
+        { data: sessions, error: sessionsError },
+        { data: assignments, error: assignmentsError },
+      ] = await Promise.all([
+        this.supabase
+          .from('analysis_sessions')
+          .select(`
+            id,
+            original_filename,
+            status,
+            created_at,
+            result:analysis_results(prediction)
+          `)
+          .eq('patient_id', id)
+          .eq('modality', 'mri')
+          .order('created_at', { ascending: false })
+          .limit(5),
+        this.supabase
+          .from('doctor_patient_relationships')
+          .select(`
+            doctor:doctor_profiles!doctor_patient_relationships_doctor_id_fkey(
+              id,
+              user_profile:user_profiles(full_name),
+              specialization
+            )
+          `)
+          .eq('patient_id', id)
+          .eq('relationship_status', 'active')
+          .limit(50),
+      ]);
 
       if (sessionsError) throw sessionsError;
-
-      // Get assigned doctors
-      const { data: assignments, error: assignmentsError } = await this.supabase
-        .from('doctor_assignments')
-        .select(`
-          doctor:doctor_profiles(
-            id,
-            user_profile:user_profiles(full_name),
-            specialization
-          )
-        `)
-        .eq('patient_id', id)
-        .eq('status', 'active');
-
       if (assignmentsError) throw assignmentsError;
 
       const result: PatientWithSessions = {
@@ -188,10 +192,10 @@ class PatientsApi {
         sessions_count: sessions?.length || 0,
         latest_session: sessions?.[0] ? {
           id: sessions[0].id,
-          session_code: sessions[0].session_code,
+          session_code: (sessions[0] as any).original_filename || sessions[0].id,
           status: sessions[0].status,
-          scan_date: sessions[0].scan_date,
-          prediction: sessions[0].predictions?.[0]?.prediction,
+          scan_date: sessions[0].created_at,
+          prediction: (sessions[0] as any).result?.[0]?.prediction,
         } : undefined,
         assigned_doctors: assignments?.map((a: any) => ({
           id: a.doctor?.id,
@@ -223,35 +227,37 @@ class PatientsApi {
     try {
       const {
         page = 1,
-        pageSize = 10,
         status,
       } = options;
+      const pageSize = clampPageSize(options.pageSize);
 
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
       let query = this.supabase
-        .from('mri_sessions')
+        .from('analysis_sessions')
         .select(`
           *,
-          predictions:mri_predictions(*),
-          doctor:doctor_profiles(
+          result:analysis_results(*),
+          report:analysis_reports(*),
+          doctor:user_profiles!analysis_sessions_doctor_id_fkey(
             id,
-            user_profile:user_profiles(full_name)
+            full_name
           ),
-          radiologist:radiologist_profiles(
+          radiologist:user_profiles!analysis_sessions_radiologist_id_fkey(
             id,
-            user_profile:user_profiles(full_name)
+            full_name
           )
         `, { count: 'exact' })
-        .eq('patient_id', patientId);
+        .eq('patient_id', patientId)
+        .eq('modality', 'mri');
 
       if (status) {
         query = query.eq('status', status);
       }
 
       query = query
-        .order('scan_date', { ascending: false })
+        .order('created_at', { ascending: false })
         .range(from, to);
 
       const { data, error, count } = await query;
@@ -286,19 +292,9 @@ class PatientsApi {
       const { data: { user } } = await this.supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Get patient profile by user_id
       const { data: patient, error } = await this.supabase
         .from('patient_profiles')
-        .select(`
-          *,
-          user_profile:user_profiles!patient_profiles_user_id_fkey(
-            full_name,
-            email,
-            phone,
-            account_status
-          ),
-          blood_group:blood_groups(blood_group)
-        `)
+        .select('id')
         .eq('user_id', user.id)
         .single();
 

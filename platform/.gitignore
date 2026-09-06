@@ -1,0 +1,44 @@
+# Environment files
+.env
+.env.local
+.env.production
+.env.*.local
+model-sync.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+venv/
+.venv/
+*.egg
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temp / uploads
+/tmp/
+*.tmp
+
+# ML models (large binaries)
+backend/models/**/*.pth
+backend/models/**/*.pt
+backend/models/**/*.onnx
+backend/models/**/*.h5
+backend/models/**/*.npy
+!backend/models/README.md

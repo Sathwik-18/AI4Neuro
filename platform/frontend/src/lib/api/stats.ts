@@ -111,18 +111,19 @@ class StatsApi {
         pid = profile.id;
       }
 
-      // Get all sessions for patient
       const { data: sessions } = await this.supabase
-        .from('mri_sessions')
+        .from('analysis_sessions')
         .select(`
           id,
-          session_code,
-          scan_date,
+          original_filename,
+          created_at,
           status,
-          prediction:mri_predictions(prediction)
+          result:analysis_results(prediction)
         `)
         .eq('patient_id', pid)
-        .order('scan_date', { ascending: false });
+        .eq('modality', 'mri')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       const allSessions = (sessions || []) as any[];
 
@@ -130,24 +131,22 @@ class StatsApi {
       const totalScans = allSessions.length;
       const completedScans = allSessions.filter(s => s.status === 'completed' || s.status === 'reviewed').length;
       const pendingScans = allSessions.filter(s => s.status === 'processing' || s.status === 'uploaded').length;
-      const latestScanDate = allSessions[0]?.scan_date || null;
+      const latestScanDate = allSessions[0]?.created_at || null;
 
-      // Calculate result distribution
       const resultDistribution = { CN: 0, MCI: 0, AD: 0 };
       allSessions.forEach(s => {
-        const pred = Array.isArray(s.prediction) ? s.prediction[0]?.prediction : s.prediction?.prediction;
+        const pred = Array.isArray(s.result) ? s.result[0]?.prediction : s.result?.prediction;
         if (pred && pred in resultDistribution) {
           resultDistribution[pred as keyof typeof resultDistribution]++;
         }
       });
 
-      // Get recent scans (last 5)
       const recentScans = allSessions.slice(0, 5).map(s => ({
         id: s.id,
-        sessionCode: s.session_code,
-        scanDate: s.scan_date,
+        sessionCode: s.original_filename || s.id,
+        scanDate: s.created_at,
         status: s.status,
-        prediction: Array.isArray(s.prediction) ? s.prediction[0]?.prediction : s.prediction?.prediction || null,
+        prediction: Array.isArray(s.result) ? s.result[0]?.prediction : s.result?.prediction || null,
       }));
 
       return {
@@ -192,41 +191,42 @@ class StatsApi {
         did = profile.id;
       }
 
-      // Get assigned patients
       const { data: assignments } = await this.supabase
-        .from('doctor_assignments')
+        .from('doctor_patient_relationships')
         .select(`
           id,
-          status,
-          patient:patient_profiles(
-            id,
-            patient_code,
+          relationship_status,
+          patient:patient_profiles!doctor_patient_relationships_patient_id_fkey(
+            user_id,
+            patient_id,
             user_profile:user_profiles(full_name)
           )
         `)
-        .eq('doctor_id', did);
+        .eq('doctor_id', did)
+        .limit(500);
 
       const allAssignments = (assignments || []) as any[];
-      const activeAssignments = allAssignments.filter(a => a.status === 'active');
+      const activeAssignments = allAssignments.filter(a => a.relationship_status === 'active');
 
-      // Get patient IDs for session queries
-      const patientIds = activeAssignments.map(a => a.patient?.id).filter(Boolean);
+      const patientIds = activeAssignments.map(a => a.patient?.user_id).filter(Boolean);
 
       // Get sessions for assigned patients
       let sessionsData: any[] = [];
       if (patientIds.length > 0) {
         const { data: sessions } = await this.supabase
-          .from('mri_sessions')
+          .from('analysis_sessions')
           .select(`
             id,
-            session_code,
+            original_filename,
             patient_id,
-            scan_date,
+            created_at,
             status,
-            prediction:mri_predictions(prediction)
+            result:analysis_results(prediction)
           `)
           .in('patient_id', patientIds)
-          .order('scan_date', { ascending: false });
+          .eq('modality', 'mri')
+          .order('created_at', { ascending: false })
+          .limit(500);
 
         sessionsData = sessions || [];
       }
@@ -235,33 +235,30 @@ class StatsApi {
       const totalPatients = allAssignments.length;
       const activePatients = activeAssignments.length;
       const pendingReviews = sessionsData.filter(s => s.status === 'completed').length;
-      const completedReviews = sessionsData.filter(s => s.status === 'reviewed').length;
+      const completedReviews = 0;
 
-      // This month's scans
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
-      const thisMonthScans = sessionsData.filter(s => new Date(s.scan_date) >= startOfMonth).length;
+      const thisMonthScans = sessionsData.filter(s => new Date(s.created_at) >= startOfMonth).length;
 
-      // Result distribution
       const resultDistribution = { CN: 0, MCI: 0, AD: 0 };
       sessionsData.forEach(s => {
-        const pred = Array.isArray(s.prediction) ? s.prediction[0]?.prediction : s.prediction?.prediction;
+        const pred = Array.isArray(s.result) ? s.result[0]?.prediction : s.result?.prediction;
         if (pred && pred in resultDistribution) {
           resultDistribution[pred as keyof typeof resultDistribution]++;
         }
       });
 
-      // Recent patients with latest scan info
       const recentPatients = activeAssignments.slice(0, 5).map(a => {
-        const patientSessions = sessionsData.filter(s => s.patient_id === a.patient?.id);
+        const patientSessions = sessionsData.filter(s => s.patient_id === a.patient?.user_id);
         const latestSession = patientSessions[0];
         return {
-          id: a.patient?.id || '',
-          name: a.patient?.user_profile?.full_name || '',
-          patientCode: a.patient?.patient_code || '',
+          id: a.patient?.user_id || '',
+          name: Array.isArray(a.patient?.user_profile) ? a.patient?.user_profile[0]?.full_name : a.patient?.user_profile?.full_name || '',
+          patientCode: a.patient?.patient_id || '',
           latestScanStatus: latestSession?.status || null,
-          latestPrediction: latestSession?.prediction?.[0]?.prediction || null,
+          latestPrediction: latestSession?.result?.[0]?.prediction || null,
         };
       });
 
@@ -308,21 +305,22 @@ class StatsApi {
         rid = profile.id;
       }
 
-      // Get all sessions for radiologist
       const { data: sessions } = await this.supabase
-        .from('mri_sessions')
+        .from('analysis_sessions')
         .select(`
           id,
-          session_code,
-          scan_date,
+          original_filename,
+          created_at,
           status,
-          patient:patient_profiles(
+          patient:patient_profiles!analysis_sessions_patient_id_fkey(
             user_profile:user_profiles(full_name)
           ),
-          prediction:mri_predictions(processing_time)
+          result:analysis_results(metrics)
         `)
         .eq('radiologist_id', rid)
-        .order('scan_date', { ascending: false });
+        .eq('modality', 'mri')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       const allSessions = (sessions || []) as any[];
 
@@ -330,45 +328,44 @@ class StatsApi {
       const totalScans = allSessions.length;
       const processingScans = allSessions.filter(s => s.status === 'processing').length;
 
-      // Today's completed scans
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const completedToday = allSessions.filter(s => {
-        const scanDate = new Date(s.scan_date);
-        return scanDate >= today && (s.status === 'completed' || s.status === 'reviewed');
+        const scanDate = new Date(s.created_at);
+        return scanDate >= today && s.status === 'completed';
       }).length;
 
-      // This week's completed scans
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
       const completedThisWeek = allSessions.filter(s => {
-        const scanDate = new Date(s.scan_date);
-        return scanDate >= startOfWeek && (s.status === 'completed' || s.status === 'reviewed');
+        const scanDate = new Date(s.created_at);
+        return scanDate >= startOfWeek && s.status === 'completed';
       }).length;
 
-      // Average processing time
       const processingTimes = allSessions
-        .map(s => Array.isArray(s.prediction) ? s.prediction[0]?.processing_time : s.prediction?.processing_time)
+        .map(s => {
+          const r = Array.isArray(s.result) ? s.result[0] : s.result;
+          return r?.metrics?.processing_time;
+        })
         .filter(Boolean) as number[];
       const averageProcessingTime = processingTimes.length > 0
         ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length
         : 0;
 
-      // Quality score (mock for now - would come from real QA system)
       const qualityScore = 98.5;
 
-      // Recent scans
       const recentScans = allSessions.slice(0, 5).map(s => {
-        const patientProfile = Array.isArray(s.patient?.user_profile)
-          ? s.patient?.user_profile[0]
-          : s.patient?.user_profile;
+        const pat = Array.isArray(s.patient) ? s.patient[0] : s.patient;
+        const patientProfile = Array.isArray(pat?.user_profile)
+          ? pat?.user_profile[0]
+          : pat?.user_profile;
         return {
           id: s.id,
-          sessionCode: s.session_code,
+          sessionCode: s.original_filename || s.id,
           patientName: patientProfile?.full_name || 'Unknown',
           status: s.status,
-          scanDate: s.scan_date,
+          scanDate: s.created_at,
         };
       });
 
@@ -403,28 +400,37 @@ class StatsApi {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      // Run all queries in parallel for better performance
       const [
-        usersResult,
+        totalUsersResult,
+        totalPatientsResult,
+        totalDoctorsResult,
+        totalRadiologistsResult,
+        totalAdminsResult,
+        activeUsersResult,
+        suspendedUsersResult,
         totalScansResult,
         scansThisMonthResult,
-        pendingVerificationsResult
+        pendingVerificationsResult,
       ] = await Promise.all([
-        this.supabase.from('user_profiles').select('role, account_status'),
-        this.supabase.from('mri_sessions').select('*', { count: 'exact', head: true }),
-        this.supabase.from('mri_sessions').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()),
-        this.supabase.from('doctor_profiles').select('*', { count: 'exact', head: true }).is('license_number', null)
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('role', 'patient'),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('role', 'doctor'),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('role', 'radiologist'),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('role', 'admin'),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('account_status', 'active'),
+        this.supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('account_status', 'suspended'),
+        this.supabase.from('analysis_sessions').select('*', { count: 'exact', head: true }).eq('modality', 'mri'),
+        this.supabase.from('analysis_sessions').select('*', { count: 'exact', head: true }).eq('modality', 'mri').gte('created_at', startOfMonth.toISOString()),
+        this.supabase.from('doctor_profiles').select('*', { count: 'exact', head: true }).is('license_number', null),
       ]);
 
-      const allUsers = usersResult.data || [];
-
-      const totalUsers = allUsers.length;
-      const totalPatients = allUsers.filter((u: any) => u.role === 'patient').length;
-      const totalDoctors = allUsers.filter((u: any) => u.role === 'doctor').length;
-      const totalRadiologists = allUsers.filter((u: any) => u.role === 'radiologist').length;
-      const totalAdmins = allUsers.filter((u: any) => u.role === 'admin').length;
-      const activeUsers = allUsers.filter((u: any) => u.account_status === 'active').length;
-      const suspendedUsers = allUsers.filter((u: any) => u.account_status === 'suspended').length;
+      const totalUsers = totalUsersResult.count || 0;
+      const totalPatients = totalPatientsResult.count || 0;
+      const totalDoctors = totalDoctorsResult.count || 0;
+      const totalRadiologists = totalRadiologistsResult.count || 0;
+      const totalAdmins = totalAdminsResult.count || 0;
+      const activeUsers = activeUsersResult.count || 0;
+      const suspendedUsers = suspendedUsersResult.count || 0;
 
       // System health (mock - would come from real monitoring)
       const systemHealth = {

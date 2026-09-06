@@ -452,7 +452,7 @@ function UserDirectoryInner({
               <select
                 value={hospitalFilter}
                 onChange={(e) => setHospitalFilter(e.target.value)}
-                className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">All hospitals</option>
                 {hospitals.map((h) => (
@@ -468,7 +468,7 @@ function UserDirectoryInner({
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search by name, email or ID…"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
             {onAddUser && (
@@ -520,7 +520,7 @@ function UserDirectoryInner({
                   const profileBase = showHospitalColumn ? PROFILE_ROUTE[u.role] : undefined;
                   const profileHref = profileBase ? `${profileBase}/${u.id}` : null;
                   const avatar = (
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 text-white text-xs font-semibold flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
                       {(u as any).avatar_url ? (
                         <img src={(u as any).avatar_url} alt={u.full_name} className="w-full h-full object-cover" />
                       ) : (
@@ -530,7 +530,7 @@ function UserDirectoryInner({
                   );
                   const nameBlock = (
                     <div className="min-w-0">
-                      <p className={cn('font-medium truncate', profileHref ? 'text-indigo-700 hover:underline' : 'text-slate-900')}>
+                      <p className={cn('font-medium truncate', profileHref ? 'text-blue-700 hover:underline' : 'text-slate-900')}>
                         {u.full_name}
                       </p>
                       <p className="text-xs text-slate-400 font-mono truncate md:hidden">{u.email}</p>

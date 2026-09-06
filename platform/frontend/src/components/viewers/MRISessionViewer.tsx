@@ -55,23 +55,23 @@ const ROLE_THEME: Record<ViewerRole, {
   volumeTone: 'dark' | 'light'; hoverText: string; hoverBg: string; title: string; dashboardHref: string;
 }> = {
   doctor: {
-    accentText: 'text-purple-500',
+    accentText: 'text-blue-500',
     spotlight: 'rgba(147, 51, 234, 0.08)',
     spotlightSoft: 'rgba(147, 51, 234, 0.06)',
     trackBg: 'bg-white/5',
     volumeTone: 'dark',
-    hoverText: 'hover:text-purple-400',
+    hoverText: 'hover:text-blue-400',
     hoverBg: 'hover:bg-white/5',
     title: 'Clinical Review',
     dashboardHref: '/doctor/dashboard',
   },
   radiologist: {
-    accentText: 'text-teal-500',
+    accentText: 'text-blue-500',
     spotlight: 'rgba(20, 184, 166, 0.08)',
     spotlightSoft: 'rgba(20, 184, 166, 0.06)',
     trackBg: 'bg-slate-100',
     volumeTone: 'light',
-    hoverText: 'hover:text-teal-600',
+    hoverText: 'hover:text-blue-600',
     hoverBg: 'hover:bg-slate-100',
     title: 'MRI Viewer',
     dashboardHref: '/radiologist/dashboard',
@@ -149,14 +149,14 @@ export function MRISessionViewer({ role, sessionId }: { role: ViewerRole; sessio
           processing: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
           uploaded: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
           failed: 'bg-red-500/10 text-red-400 border-red-500/30',
-          reviewed: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+          reviewed: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
         }
       : {
           completed: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
           processing: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
           uploaded: 'bg-gray-500/10 text-slate-500 border-gray-500/30',
           failed: 'bg-red-500/10 text-red-600 border-red-500/30',
-          reviewed: 'bg-purple-500/10 text-violet-600 border-purple-500/30',
+          reviewed: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
         };
 
   const hasVisualizations =
@@ -607,7 +607,7 @@ export function MRISessionViewer({ role, sessionId }: { role: ViewerRole; sessio
                       onClick={() => setActiveVizTab(tab.key as typeof activeVizTab)}
                       className={`text-[10px] px-2.5 py-1 rounded-md font-medium transition-colors ${
                         activeVizTab === tab.key
-                          ? 'bg-teal-500/15 text-teal-600 border border-teal-500/30'
+                          ? 'bg-blue-500/15 text-blue-600 border border-blue-500/30'
                           : 'text-muted-foreground hover:text-foreground hover:bg-slate-100'
                       }`}
                     >
@@ -621,7 +621,7 @@ export function MRISessionViewer({ role, sessionId }: { role: ViewerRole; sessio
                       href={tab.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block rounded-lg overflow-hidden border border-border/50 hover:border-teal-500/30 transition-colors"
+                      className="block rounded-lg overflow-hidden border border-border/50 hover:border-blue-500/30 transition-colors"
                     >
                       <img src={tab.url} alt={tab.label} className="w-full h-auto bg-slate-100" loading="lazy" />
                     </a>

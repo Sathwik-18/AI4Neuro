@@ -84,7 +84,7 @@ const statusStyles: Record<string, string> = {
   processing: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
   uploaded: 'bg-gray-500/10 text-slate-500 border-gray-500/30',
   failed: 'bg-red-500/10 text-red-600 border-red-500/30',
-  reviewed: 'bg-purple-500/10 text-violet-600 border-purple-500/30',
+  reviewed: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
 };
 
 function calculateAge(dateOfBirth: string | null): string {
@@ -112,7 +112,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
         <Navbar />
         <div className="flex items-center justify-center h-[80vh]">
           <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-purple-500 mx-auto mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
             <p className="text-muted-foreground">Loading patient data...</p>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <div className="h-6 w-px bg-border" />
             <div>
               <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider mb-1 text-slate-400">
-                <Link href="/doctor/dashboard" className="text-violet-600 hover:text-violet-800 transition-colors hover:underline">
+                <Link href="/doctor/dashboard" className="text-blue-600 hover:text-blue-800 transition-colors hover:underline">
                   Doctor Dashboard
                 </Link>
                 <span>→</span>
@@ -182,7 +182,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
                 </span>
               </div>
               <h1 className="text-xl lg:text-2xl font-bold text-foreground flex items-center gap-2">
-                <User className="h-5 w-5 lg:h-6 lg:w-6 text-purple-500" />
+                <User className="h-5 w-5 lg:h-6 lg:w-6 text-blue-500" />
                 <GradientText>{patientName}</GradientText>
               </h1>
               <p className="text-xs lg:text-sm text-muted-foreground mt-0.5 font-mono">
@@ -198,7 +198,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Age</p>
-                <span className="text-2xl font-bold text-violet-600">
+                <span className="text-2xl font-bold text-blue-600">
                   {age}
                 </span>
                 <p className="text-xs text-muted-foreground">
@@ -207,8 +207,8 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
                     : 'DOB not set'}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-purple-500/10">
-                <Calendar className="h-5 w-5 text-purple-500" />
+              <div className="p-3 rounded-xl bg-blue-500/10">
+                <Calendar className="h-5 w-5 text-blue-500" />
               </div>
             </div>
           </SpotlightCard>
@@ -217,7 +217,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Gender</p>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent capitalize">
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-400 bg-clip-text text-transparent capitalize">
                   {gender}
                 </span>
                 <p className="text-xs text-muted-foreground">Biological sex</p>
@@ -247,13 +247,13 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Total Scans</p>
-                <span className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   <AnimatedCounter value={patient.sessions_count || 0} />
                 </span>
                 <p className="text-xs text-muted-foreground">MRI sessions</p>
               </div>
-              <div className="p-3 rounded-xl bg-teal-500/10">
-                <ScanLine className="h-5 w-5 text-teal-500" />
+              <div className="p-3 rounded-xl bg-blue-500/10">
+                <ScanLine className="h-5 w-5 text-blue-500" />
               </div>
             </div>
           </SpotlightCard>
@@ -266,17 +266,17 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <SpotlightCard spotlightColor="rgba(147, 51, 234, 0.08)">
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <Brain className="h-5 w-5 text-purple-500" />
+                  <Brain className="h-5 w-5 text-blue-500" />
                   <h2 className="text-lg font-semibold text-foreground">MRI Scan History</h2>
                   {sessionsLoading && (
-                    <Loader2 className="h-4 w-4 animate-spin text-violet-600 ml-2" />
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600 ml-2" />
                   )}
                 </div>
 
                 {sessions.length === 0 && !sessionsLoading ? (
                   <div className="text-center py-12">
-                    <div className="p-4 rounded-full bg-purple-500/10 w-fit mx-auto mb-4">
-                      <Brain className="h-8 w-8 text-violet-600" />
+                    <div className="p-4 rounded-full bg-blue-500/10 w-fit mx-auto mb-4">
+                      <Brain className="h-8 w-8 text-blue-600" />
                     </div>
                     <p className="text-foreground font-medium mb-1">No scan history</p>
                     <p className="text-sm text-muted-foreground">
@@ -360,7 +360,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
                                     size="sm"
                                     variant="outline"
                                     asChild
-                                    className="h-8 gap-1.5 border-purple-500/30 text-violet-600 hover:bg-purple-500/10"
+                                    className="h-8 gap-1.5 border-blue-500/30 text-blue-600 hover:bg-blue-500/10"
                                   >
                                     <Link href={`/doctor/viewer/${session.id}`}>
                                       <Eye className="h-3.5 w-3.5" />
@@ -392,7 +392,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <SpotlightCard spotlightColor="rgba(147, 51, 234, 0.08)">
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Activity className="h-4 w-4 text-purple-500" />
+                  <Activity className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">Latest Assessment</h3>
                   {latestPredConfig && (
                     <PulseRing color={latestPredConfig.ringColor} className="ml-auto" />
@@ -454,7 +454,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
 
                     {latestSession?.id && (
                       <Button
-                        className="w-full mt-2 gap-1.5 bg-purple-500/10 text-violet-600 border border-purple-500/30 hover:bg-purple-500/20"
+                        className="w-full mt-2 gap-1.5 bg-blue-500/10 text-blue-600 border border-blue-500/30 hover:bg-blue-500/20"
                         variant="outline"
                         size="sm"
                         asChild
@@ -479,7 +479,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <SpotlightCard spotlightColor="rgba(147, 51, 234, 0.06)">
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Stethoscope className="h-4 w-4 text-purple-500" />
+                  <Stethoscope className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">Assigned Doctors</h3>
                 </div>
 
@@ -490,8 +490,8 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
                         key={doctor.id}
                         className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] border border-white/[0.05]"
                       >
-                        <div className="p-1.5 rounded-lg bg-purple-500/10 shrink-0">
-                          <Stethoscope className="h-3.5 w-3.5 text-violet-600" />
+                        <div className="p-1.5 rounded-lg bg-blue-500/10 shrink-0">
+                          <Stethoscope className="h-3.5 w-3.5 text-blue-600" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs text-foreground font-medium truncate">
@@ -516,7 +516,7 @@ export default function DoctorPatientDetailPage({ params }: { params: Promise<{ 
             <SpotlightCard spotlightColor="rgba(147, 51, 234, 0.06)">
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <User className="h-4 w-4 text-purple-500" />
+                  <User className="h-4 w-4 text-blue-500" />
                   <h3 className="text-sm font-semibold text-foreground">Patient Information</h3>
                 </div>
                 <div className="space-y-2.5">

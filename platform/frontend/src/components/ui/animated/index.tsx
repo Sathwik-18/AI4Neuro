@@ -149,7 +149,7 @@ export function PulseRing({
 }) {
   const colors = {
     purple: 'bg-purple-500',
-    teal: 'bg-teal-500',
+    teal: 'bg-blue-500',
     blue: 'bg-blue-500',
     green: 'bg-green-500',
     red: 'bg-red-500',

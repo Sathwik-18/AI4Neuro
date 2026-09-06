@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not available' }, { status: 404 });
+  }
+
   try {
     const supabase = await createClient();
 
-    // Get current user
     const {
       data: { user },
       error: userError,
@@ -15,7 +18,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         status: 'error',
         message: 'Failed to get user',
-        error: userError.message,
       });
     }
 
@@ -26,10 +28,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('*')
+      .select('id, full_name, role, account_status')
       .eq('id', user.id)
       .single();
 
@@ -37,7 +38,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         status: 'error',
         message: 'Failed to get profile',
-        error: profileError.message,
       });
     }
 
@@ -45,15 +45,13 @@ export async function GET(request: NextRequest) {
       status: 'authenticated',
       user: {
         id: user.id,
-        email: user.email,
-        profile,
+        role: profile?.role,
       },
     });
   } catch (error: any) {
-    return NextResponse.json({
-      status: 'error',
-      message: 'Internal server error',
-      error: error.message,
-    });
+    return NextResponse.json(
+      { status: 'error', message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

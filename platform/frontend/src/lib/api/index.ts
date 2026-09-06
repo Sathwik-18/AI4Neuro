@@ -20,6 +20,8 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+export const MAX_PAGE_SIZE = 200;
+
 export interface FilterOptions {
   page?: number;
   pageSize?: number;
@@ -30,6 +32,11 @@ export interface FilterOptions {
   role?: string;
   dateFrom?: string;
   dateTo?: string;
+}
+
+export function clampPageSize(pageSize: number | undefined, fallback = 10): number {
+  const size = pageSize ?? fallback;
+  return Math.min(Math.max(1, size), MAX_PAGE_SIZE);
 }
 
 // Base API class with common functionality

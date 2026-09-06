@@ -115,7 +115,7 @@ function ScansPage() {
             <select
               value={modality}
               onChange={(e) => setModality(e.target.value)}
-              className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option value="">All modalities</option>
               <option value="mri">MRI</option>
@@ -125,7 +125,7 @@ function ScansPage() {
               <select
                 value={hospitalFilter}
                 onChange={(e) => setHospitalFilter(e.target.value)}
-                className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="py-2 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">All hospitals</option>
                 {hospitals.map((h) => (
@@ -141,7 +141,7 @@ function ScansPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search patient, doctor, hospital…"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
           </div>
@@ -183,11 +183,11 @@ function ScansPage() {
                   <tr key={s.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-indigo-50 shrink-0">
+                        <div className="p-1.5 rounded-lg bg-blue-50 shrink-0">
                           {s.modality === 'eeg' ? (
-                            <Activity className="h-4 w-4 text-indigo-600" />
+                            <Activity className="h-4 w-4 text-blue-600" />
                           ) : (
-                            <Brain className="h-4 w-4 text-indigo-600" />
+                            <Brain className="h-4 w-4 text-blue-600" />
                           )}
                         </div>
                         <div className="min-w-0">
@@ -200,7 +200,7 @@ function ScansPage() {
                       {s.patient_id ? (
                         <Link
                           href={`/super-admin/patients/${s.patient_id}`}
-                          className="text-indigo-700 hover:underline"
+                          className="text-blue-700 hover:underline"
                         >
                           {s.patient_name || 'Unknown'}
                         </Link>
@@ -212,7 +212,7 @@ function ScansPage() {
                       {s.doctor_id ? (
                         <Link
                           href={`/super-admin/doctors/${s.doctor_id}`}
-                          className="text-indigo-700 hover:underline"
+                          className="text-blue-700 hover:underline"
                         >
                           {s.doctor_name || 'Unknown'}
                         </Link>
@@ -224,7 +224,7 @@ function ScansPage() {
                       {s.hospital_id ? (
                         <Link
                           href={`/super-admin/hospitals/${s.hospital_id}`}
-                          className="text-indigo-700 hover:underline"
+                          className="text-blue-700 hover:underline"
                         >
                           {s.hospital_name || '—'}
                         </Link>
@@ -241,7 +241,7 @@ function ScansPage() {
                     <td className="py-3 pr-0 text-right">
                       <Link
                         href={`/analysis/${s.id}`}
-                        className="text-xs font-medium text-indigo-700 hover:underline whitespace-nowrap"
+                        className="text-xs font-medium text-blue-700 hover:underline whitespace-nowrap"
                       >
                         View
                       </Link>

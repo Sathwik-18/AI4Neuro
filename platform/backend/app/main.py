@@ -13,6 +13,9 @@ from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1 import analysis as analysis_routes
@@ -62,19 +65,27 @@ def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging()
 
+    limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+    docs_url = "/docs" if not settings.is_production else None
+    redoc_url = "/redoc" if not settings.is_production else None
     app = FastAPI(
         title="Unified Neuro Platform API",
         version="1.0.0",
         description="One API for EEG and MRI neuro-analysis.",
         lifespan=lifespan,
+        docs_url=docs_url,
+        redoc_url=redoc_url,
     )
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     )
 
     v1 = APIRouter(prefix=API_V1_PREFIX)
@@ -95,7 +106,7 @@ def create_app() -> FastAPI:
             "name": "Unified Neuro Platform API",
             "version": "1.0.0",
             "status": "running",
-            "docs": "/docs",
+            "docs": docs_url,
             "api": API_V1_PREFIX,
         }
 
@@ -138,7 +149,7 @@ def _install_error_handlers(app: FastAPI) -> None:
         status_code, error_code, fallback_message = _PG_ERROR_STATUS.get(
             pg_code, (500, "database_error", "A database error occurred.")
         )
-        message = getattr(exc, "message", None) or fallback_message
+        message = fallback_message if settings.is_production else (getattr(exc, "message", None) or fallback_message)
         logger.warning("Database error on %s (pg code=%s): %s", request.url.path, pg_code, message)
         return JSONResponse(
             status_code=status_code,

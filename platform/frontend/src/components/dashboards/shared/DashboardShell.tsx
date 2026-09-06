@@ -3,39 +3,17 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  LogOut,
-  Menu,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  Brain,
-  Waves,
-  Scan,
-  Lock,
-} from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { cn } from '@/lib/utils';
 import { BrandLogo } from '@/components/shared/BrandLogo';
-import { ACCENT_STYLES, type Accent } from './primitives';
+import { MaterialIcon, type Accent } from './primitives';
 import { NotificationBell, ProfileMenu } from './TopbarWidgets';
 
-/**
- * Matches a nav href (which may carry a query string, e.g.
- * `/super-admin/users?role=doctor`) against the active path *and* search
- * params. Several nav items can share the same base path and differ only by
- * query string (Hospital Admins/Doctors/Radiologists/Patients all route to
- * `/super-admin/users`), so matching on path alone would light up all of
- * them at once — every query param the href declares must also match the
- * current URL's search params.
- */
 function isNavActive(href: string, pathname: string, search: string): boolean {
   const [base, query] = href.split('?');
   const pathMatches = base === pathname || (base !== '/' && pathname.startsWith(`${base}/`));
   if (!pathMatches) return false;
   if (!query) return true;
-
   const hrefParams = new URLSearchParams(query);
   const currentParams = new URLSearchParams(search);
   for (const [key, value] of hrefParams) {
@@ -48,13 +26,11 @@ function NavLinks({
   navItems,
   pathname,
   collapsed,
-  styles,
   onNavigate,
 }: {
   navItems: NavItem[];
   pathname: string;
   collapsed: boolean;
-  styles: (typeof ACCENT_STYLES)[Accent];
   onNavigate: () => void;
 }) {
   const search = useSearchParams().toString();
@@ -69,14 +45,14 @@ function NavLinks({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
+              'flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-colors',
               active
-                ? cn('bg-gradient-to-r text-white shadow-sm shadow-indigo-100', styles.gradient)
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             )}
             title={collapsed ? item.label : undefined}
           >
-            <Icon className={cn("h-4.5 w-4.5 shrink-0", active ? "text-white animate-pulse" : "text-slate-400")} />
+            <Icon className={cn('h-[18px] w-[18px] shrink-0', active ? 'text-white' : 'text-slate-400')} />
             {!collapsed && <span className="truncate">{item.label}</span>}
           </Link>
         );
@@ -104,136 +80,106 @@ export function DashboardShell({ roleLabel, accent, navItems, children }: Dashbo
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const styles = ACCENT_STYLES[accent];
 
-  // Patients cannot create analyses, so the modality shortcuts are read-only for them.
   const canCreate = userProfile?.role !== 'patient';
 
-  // Lock body scroll while the mobile drawer is open so touch/keyboard
-  // scrolling can't reach the page content behind the overlay.
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  // Auto-close the drawer on any route change that doesn't go through a
-  // sidebar <Link> (e.g. the topbar's back button, the search form's
-  // router.push, or browser back/forward) — those previously left the
-  // drawer open over the newly-navigated page.
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   const sidebarContent = (
     <>
-      {/* Logo — matches the landing page navbar's logo + wordmark treatment */}
-      <div className="flex items-center gap-2 px-5 py-6">
+      {/* Logo */}
+      <div className="flex items-center gap-2 px-4 py-5">
         {collapsed ? (
-          // eslint-disable-next-line @next/next/no-img-element -- matches BrandLogo's own <img> usage for this asset
           <img
             src="/landing_homepage/AI4NEuroLOGO copy.png"
             alt="AI4Neuro Logo"
-            className="h-8 w-auto object-contain"
+            className="h-7 w-auto object-contain"
           />
         ) : (
-          <BrandLogo markHeight={32} textHeight={16} />
+          <BrandLogo markHeight={28} textHeight={14} />
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         <Suspense fallback={null}>
           <NavLinks
             navItems={navItems}
             pathname={pathname}
             collapsed={collapsed}
-            styles={styles}
             onNavigate={() => setMobileOpen(false)}
           />
         </Suspense>
       </nav>
 
-      {/* Services block */}
+      {/* Services */}
       {!collapsed && (
-        <div className="px-4 py-3 mt-auto border-t border-slate-100/80 pt-4">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-1 mb-3 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            AI4Neuro Services
+        <div className="px-3 py-3 mt-auto border-t border-slate-100">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3 mb-2">
+            Pipelines
           </p>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {canCreate ? (
               <Link
                 href="/analysis/new?modality=mri"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-50/80 to-violet-50/60 hover:from-indigo-100/80 hover:to-violet-100/80 border border-indigo-100/50 transition-all duration-300 shadow-[0_2px_8px_rgba(99,102,241,0.04)]"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors group"
               >
-                <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-600">
-                  <Scan className="h-3.5 w-3.5 animate-pulse" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">MRI Analysis</p>
-                  <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wide flex items-center gap-1 mt-0.5">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                    Active
-                  </p>
-                </div>
+                <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 2 C6.5 2 4 5.5 4 10 C4 14.5 6.5 18 10 18 C13.5 18 16 14.5 16 10 C16 5.5 13.5 2 10 2Z" />
+                  <path d="M7 4.5 Q10 7 10 10 Q10 13 7 15.5" />
+                  <path d="M13 4.5 Q10 7 10 10 Q10 13 13 15.5" />
+                  <line x1="4" y1="10" x2="16" y2="10" />
+                </svg>
+                <span className="text-xs font-medium text-slate-600 group-hover:text-slate-900">MRI</span>
               </Link>
             ) : (
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-50/80 to-violet-50/60 border border-indigo-100/50 shadow-[0_2px_8px_rgba(99,102,241,0.04)]">
-                <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-600">
-                  <Scan className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">MRI Analysis</p>
-                  <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wide flex items-center gap-1 mt-0.5">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                    Active
-                  </p>
-                </div>
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-md">
+                <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 2 C6.5 2 4 5.5 4 10 C4 14.5 6.5 18 10 18 C13.5 18 16 14.5 16 10 C16 5.5 13.5 2 10 2Z" />
+                  <path d="M7 4.5 Q10 7 10 10 Q10 13 7 15.5" />
+                  <path d="M13 4.5 Q10 7 10 10 Q10 13 13 15.5" />
+                  <line x1="4" y1="10" x2="16" y2="10" />
+                </svg>
+                <span className="text-xs font-medium text-slate-600">MRI</span>
               </div>
             )}
 
             {canCreate ? (
               <Link
                 href="/analysis/new?modality=eeg"
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-50/80 to-blue-50/60 hover:from-cyan-100/80 hover:to-blue-100/80 border border-cyan-100/50 transition-all duration-300 shadow-[0_2px_8px_rgba(6,182,212,0.04)]"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-slate-50 transition-colors group"
               >
-                <div className="p-1.5 rounded-lg bg-cyan-100 text-cyan-600">
-                  <Waves className="h-3.5 w-3.5 animate-pulse" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">EEG Analysis</p>
-                  <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wide flex items-center gap-1 mt-0.5">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                    Active
-                  </p>
-                </div>
+                <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 10 L4 10 L5.5 4 L7 16 L8.5 7 L10 13 L11.5 3 L13 14 L14.5 8 L16 10 L19 10" />
+                </svg>
+                <span className="text-xs font-medium text-slate-600 group-hover:text-slate-900">EEG</span>
               </Link>
             ) : (
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-50/80 to-blue-50/60 border border-cyan-100/50 shadow-[0_2px_8px_rgba(6,182,212,0.04)]">
-                <div className="p-1.5 rounded-lg bg-cyan-100 text-cyan-600">
-                  <Waves className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">EEG Analysis</p>
-                  <p className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wide flex items-center gap-1 mt-0.5">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                    Active
-                  </p>
-                </div>
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-md">
+                <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 10 L4 10 L5.5 4 L7 16 L8.5 7 L10 13 L11.5 3 L13 14 L14.5 8 L16 10 L19 10" />
+                </svg>
+                <span className="text-xs font-medium text-slate-600">EEG</span>
               </div>
             )}
 
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 border-dashed opacity-60">
-              <div className="p-1.5 rounded-lg bg-slate-100 text-slate-400">
-                <Brain className="h-3.5 w-3.5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-slate-500">PET Analysis</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5">Coming Soon</p>
-              </div>
-              <Lock className="h-3.5 w-3.5 text-slate-400 shrink-0 mr-1" />
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-md opacity-40">
+              <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="7" cy="7" r="2" />
+                <circle cx="13" cy="7" r="2" />
+                <circle cx="10" cy="13" r="2" />
+                <line x1="8.5" y1="8.5" x2="10" y2="11" />
+                <line x1="11.5" y1="8.5" x2="10" y2="11" />
+              </svg>
+              <span className="text-xs font-medium text-slate-400 flex-1">PET</span>
+              <MaterialIcon name="lock" size={12} className="text-slate-300" />
             </div>
           </div>
         </div>
@@ -243,45 +189,45 @@ export function DashboardShell({ roleLabel, accent, navItems, children }: Dashbo
       <div className="p-3">
         <button
           onClick={() => signOut()}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+          className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
         >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && 'Logout'}
+          <MaterialIcon name="logout" size={18} />
+          {!collapsed && 'Sign out'}
         </button>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50/80 flex">
       {/* Desktop sidebar */}
       <aside
         className={cn(
           'hidden md:flex flex-col border-r border-slate-200 bg-white sticky top-0 h-screen transition-all duration-200',
-          collapsed ? 'w-[76px]' : 'w-64'
+          collapsed ? 'w-[68px]' : 'w-60'
         )}
       >
         {sidebarContent}
         <button
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 shadow-sm"
+          className="absolute -right-3 top-7 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 shadow-sm"
         >
-          {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+          <MaterialIcon name={collapsed ? 'chevron_right' : 'chevron_left'} size={14} />
         </button>
       </aside>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 h-full w-64 bg-white flex flex-col overflow-y-auto">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute left-0 top-0 h-full w-60 bg-white flex flex-col overflow-y-auto">
             <button
               onClick={() => setMobileOpen(false)}
               aria-label="Close navigation menu"
-              className="absolute right-3 top-4 text-slate-400"
+              className="absolute right-3 top-4 text-slate-400 hover:text-slate-600"
             >
-              <X className="h-5 w-5" />
+              <MaterialIcon name="close" size={20} />
             </button>
             {sidebarContent}
           </aside>
@@ -291,25 +237,25 @@ export function DashboardShell({ roleLabel, accent, navItems, children }: Dashbo
       {/* Main column */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Topbar */}
-        <header className="sticky top-0 z-30 bg-slate-50/90 backdrop-blur px-4 md:px-6 py-4 flex items-center gap-3">
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b border-slate-100 px-4 md:px-6 h-14 flex items-center gap-3">
           <button
             className="md:hidden text-slate-500"
             onClick={() => setMobileOpen(true)}
             aria-label="Open navigation menu"
           >
-            <Menu className="h-5 w-5" />
+            <MaterialIcon name="menu" size={22} />
           </button>
 
           <button
             onClick={() => router.back()}
             aria-label="Go back"
-            className="flex items-center justify-center h-9 w-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors shrink-0"
+            className="flex items-center justify-center h-8 w-8 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <MaterialIcon name="arrow_back" size={18} />
           </button>
 
-          <div className="ml-auto flex items-center gap-3">
-            <span className={cn('hidden lg:inline text-xs font-semibold px-3 py-1.5 rounded-full', styles.soft, styles.text)}>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="hidden lg:inline text-xs font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
               {roleLabel}
             </span>
             <NotificationBell accent={accent} />
@@ -318,7 +264,7 @@ export function DashboardShell({ roleLabel, accent, navItems, children }: Dashbo
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-4 md:px-6 pb-8 space-y-6">{children}</main>
+        <main className="flex-1 px-4 md:px-6 py-6 space-y-5">{children}</main>
       </div>
     </div>
   );
