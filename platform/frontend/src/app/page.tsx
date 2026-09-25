@@ -4,54 +4,47 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { dashboardPathFor } from '@/lib/roles';
+import LandingPage from './landing/page';
 
 /**
- * Root page with smart redirects:
- * - Not authenticated -> /login
- * - Authenticated with active account → /{role}/dashboard
- * - Authenticated but suspended → /account-suspended
+ * Root route — the platform's public front door.
+ *
+ * - Not authenticated        → render the landing page in place (no redirect,
+ *                              so `/` is a real, indexable marketing page).
+ * - Authenticated + active   → redirect to `/{role}/dashboard`.
+ * - Authenticated, not active→ redirect to `/account-suspended`.
+ *
+ * Previously this route redirected every anonymous visitor straight to
+ * `/login`, which left the landing page at `/landing` with nothing linking to
+ * it — the product had no public entry point at all.
  */
 export default function RootPage() {
   const { user, userProfile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // Wait for auth state to load
-    if (loading) return;
+    if (loading || !user || !userProfile) return;
 
-    // Not authenticated - go to the hospital login page
-    if (!user) {
-      router.replace('/login');
+    if (userProfile.account_status !== 'active') {
+      router.replace('/account-suspended');
       return;
     }
 
-    // Authenticated - check account status and redirect to appropriate dashboard
-    if (userProfile) {
-      if (userProfile.account_status !== 'active') {
-        router.replace('/account-suspended');
-        return;
-      }
-
-      // Redirect to role-specific dashboard (route segments use hyphens,
-      // e.g. super_admin -> /super-admin/dashboard).
-      if (userProfile.role) {
-        router.replace(dashboardPathFor(userProfile.role));
-        return;
-      }
+    if (userProfile.role) {
+      router.replace(dashboardPathFor(userProfile.role));
     }
-
-    // User exists but no profile yet - might still be loading
-    // Wait a bit then redirect to login if still no profile
-    const timeout = setTimeout(() => {
-      if (!userProfile) {
-        router.replace('/login');
-      }
-    }, 3000);
-
-    return () => clearTimeout(timeout);
   }, [user, userProfile, loading, router]);
 
-  // Full-screen loading state while determining redirect
+  // Signed-in users are on their way to a dashboard — hold the landing page
+  // back so it doesn't flash before the redirect lands.
+  if (loading || user) {
+    return <RootRedirectSplash />;
+  }
+
+  return <LandingPage />;
+}
+
+function RootRedirectSplash() {
   return (
     <div className="ai4-page min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-6">

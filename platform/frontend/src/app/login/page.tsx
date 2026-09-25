@@ -166,7 +166,7 @@ export default function LoginPage() {
             <div className="mb-8">
               <p className="mb-2 text-xs font-bold uppercase tracking-wider text-blue-700">AI4Neuro</p>
               <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Welcome back</h1>
-              <p className="text-slate-500">Sign in to access EEG, MRI, and PET analysis workflows.</p>
+              <p className="text-slate-500">Sign in to access EEG and MRI analysis workflows.</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -250,7 +250,7 @@ export default function LoginPage() {
               <p className="text-xs font-bold uppercase tracking-wider text-blue-700">Unified clinical workspace</p>
               <h2 className="mt-3 text-2xl font-extrabold text-slate-900">One login for every diagnostic lane</h2>
               <p className="mt-3 text-slate-500 leading-relaxed">
-                Route EEG recordings, MRI scans, and PET biomarkers through the same secure platform
+                Route EEG recordings and MRI scans through the same secure platform
                 while preserving modality-specific reports.
               </p>
               <div className="grid gap-3 mt-8">

@@ -1,372 +1,57 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, forwardRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { dashboardPathFor } from '@/lib/roles';
+import { dashboardPathFor, ROLE_META } from '@/lib/roles';
 import {
   Activity,
   Brain,
-  Waves,
   ShieldCheck,
-  ScanLine,
   Sparkles,
-  ClipboardCheck,
   Stethoscope,
   Mail,
   Phone,
   MapPin,
-  ArrowRight,
-  ArrowUpRight,
-  Radio,
-  Linkedin,
-  Github,
   BrainCircuit,
   LogIn,
   Menu,
   MoveUpRight,
   X,
-  DatabaseZap,
-  Clock3,
+  Layers,
+  UsersRound,
+  FileStack,
+  Building2,
+  Landmark,
   ScanSearch,
   RadioTower,
   ShieldPlus,
-  ScanHeart,
+  UploadCloud,
   FileSearch,
   MessageSquareText,
+  Users,
+  ScanLine,
+  FileText,
+  KeyRound,
+  Lock,
+  ListChecks,
+  HeartPulse,
 } from 'lucide-react';
+import { VariableProximity, GradientText, RotatingText } from './_effects';
 import './landing.css';
 
 // ============================================================================
-// ANIMATION HELPERS
+// NAVBAR
 // ============================================================================
+const NAV_SECTIONS = [
+  { href: '#home', label: 'Home' },
+  { href: '#services', label: 'Services' },
+  { href: '#process', label: 'Process' },
+  { href: '#roles', label: 'Roles' },
+  { href: '#security', label: 'Security' },
+  { href: '#contact', label: 'Contact' },
+];
 
-function useAnimationFrame(callback: () => void) {
-  useEffect(() => {
-    let frameId: number;
-    const loop = () => {
-      callback();
-      frameId = requestAnimationFrame(loop);
-    };
-    frameId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frameId);
-  }, [callback]);
-}
-
-function useMousePositionRef(containerRef: React.RefObject<HTMLElement | null>) {
-  const positionRef = useRef({ x: -9999, y: -9999 });
-
-  useEffect(() => {
-    const updatePosition = (x: number, y: number) => {
-      if (!containerRef?.current) {
-        positionRef.current = { x, y };
-        return;
-      }
-      const rect = containerRef.current.getBoundingClientRect();
-      positionRef.current = { x: x - rect.left, y: y - rect.top };
-    };
-
-    const handleMouseMove = (event: MouseEvent) => updatePosition(event.clientX, event.clientY);
-    const handleTouchMove = (event: TouchEvent) => {
-      const touch = event.touches[0];
-      if (touch) updatePosition(touch.clientX, touch.clientY);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove, { passive: true });
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [containerRef]);
-
-  return positionRef;
-}
-
-interface VariableProximityProps extends React.HTMLAttributes<HTMLSpanElement> {
-  label: string;
-  fromFontVariationSettings: string;
-  toFontVariationSettings: string;
-  containerRef: React.RefObject<HTMLElement | null>;
-  radius?: number;
-  falloff?: 'linear' | 'exponential' | 'gaussian';
-}
-
-const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>(
-  (
-    {
-      label,
-      fromFontVariationSettings,
-      toFontVariationSettings,
-      containerRef,
-      radius = 80,
-      falloff = 'linear',
-      className = '',
-      style,
-      ...restProps
-    },
-    ref
-  ) => {
-    const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
-    const mousePositionRef = useMousePositionRef(containerRef);
-    const lastPositionRef = useRef({ x: null as number | null, y: null as number | null });
-
-    const parsedSettings = useMemo(() => {
-      const parseSettings = (settingsString: string) =>
-        new Map(
-          settingsString
-            .split(',')
-            .map((setting) => setting.trim())
-            .map((setting) => {
-              const [name, value] = setting.split(' ');
-              return [name.replace(/['"]/g, ''), Number.parseFloat(value)] as [string, number];
-            })
-        );
-
-      const fromSettings = parseSettings(fromFontVariationSettings);
-      const toSettings = parseSettings(toFontVariationSettings);
-
-      return Array.from(fromSettings.entries()).map(([axis, fromValue]) => ({
-        axis,
-        fromValue,
-        toValue: toSettings.get(axis) ?? fromValue,
-      }));
-    }, [fromFontVariationSettings, toFontVariationSettings]);
-
-    useAnimationFrame(() => {
-      if (!containerRef?.current) return;
-
-      const { x, y } = mousePositionRef.current;
-      if (lastPositionRef.current.x === x && lastPositionRef.current.y === y) return;
-      lastPositionRef.current = { x, y };
-
-      const containerRect = containerRef.current.getBoundingClientRect();
-
-      letterRefs.current.forEach((letterRef) => {
-        if (!letterRef) return;
-
-        const rect = letterRef.getBoundingClientRect();
-        const letterCenterX = rect.left + rect.width / 2 - containerRect.left;
-        const letterCenterY = rect.top + rect.height / 2 - containerRect.top;
-        const distance = Math.hypot(x - letterCenterX, y - letterCenterY);
-
-        if (distance >= radius) {
-          letterRef.style.fontVariationSettings = fromFontVariationSettings;
-          return;
-        }
-
-        const normalizedDistance = Math.min(Math.max(1 - distance / radius, 0), 1);
-        const falloffValue =
-          falloff === 'exponential'
-            ? normalizedDistance ** 2
-            : falloff === 'gaussian'
-              ? Math.exp(-((distance / (radius / 2)) ** 2) / 2)
-              : normalizedDistance;
-
-        letterRef.style.fontVariationSettings = parsedSettings
-          .map(({ axis, fromValue, toValue }) => {
-            const value = fromValue + (toValue - fromValue) * falloffValue;
-            return `'${axis}' ${value}`;
-          })
-          .join(', ');
-      });
-    });
-
-    let letterIndex = 0;
-    const lines = label.split('\n');
-
-    return (
-      <span
-        ref={ref}
-        aria-label={label.replace(/\n/g, ' ')}
-        className={`${className} variable-proximity`}
-        style={{ display: 'inline', ...style }}
-        {...restProps}
-      >
-        {lines.map((line, lineIndex) => {
-          const words = line.split(' ');
-          return (
-            <React.Fragment key={lineIndex}>
-              {words.map((word, wordIndex) => (
-                <span className="variable-word" key={`${word}-${wordIndex}`} style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>
-                  {word.split('').map((letter) => {
-                    const currentLetterIndex = letterIndex;
-                    letterIndex += 1;
-
-                    return (
-                      <span
-                        aria-hidden="true"
-                        className="variable-letter"
-                        key={`${letter}-${currentLetterIndex}`}
-                        ref={(element) => {
-                          letterRefs.current[currentLetterIndex] = element;
-                        }}
-                        style={{ fontVariationSettings: fromFontVariationSettings }}
-                      >
-                        {letter}
-                      </span>
-                    );
-                  })}
-                  {wordIndex < words.length - 1 && <span className="variable-space">&nbsp;</span>}
-                </span>
-              ))}
-              {lineIndex < lines.length - 1 && <br />}
-            </React.Fragment>
-          );
-        })}
-      </span>
-    );
-  }
-);
-
-VariableProximity.displayName = 'VariableProximity';
-
-interface GradientTextProps {
-  children: React.ReactNode;
-  className?: string;
-  colors?: string[];
-  animationSpeed?: number;
-  showBorder?: boolean;
-  direction?: 'horizontal' | 'vertical' | 'diagonal';
-  pauseOnHover?: boolean;
-  yoyo?: boolean;
-}
-
-function GradientText({
-  children,
-  className = '',
-  colors = ['#064f8f', '#0f8ea7', '#64f579'],
-  animationSpeed = 8,
-  showBorder = false,
-  direction = 'horizontal',
-  pauseOnHover = false,
-  yoyo = true,
-}: GradientTextProps) {
-  const gradientAngle =
-    direction === 'horizontal' ? 'to right' : direction === 'vertical' ? 'to bottom' : 'to bottom right';
-  const gradientColors = [...colors, colors[0]].join(', ');
-
-  const style = {
-    '--gradient-text-colors': `linear-gradient(${gradientAngle}, ${gradientColors})`,
-    '--gradient-text-speed': `${animationSpeed}s`,
-    '--gradient-text-direction': yoyo ? 'alternate' : 'normal',
-  } as React.CSSProperties;
-
-  return (
-    <span
-      className={`animated-gradient-text ${showBorder ? 'with-border' : ''} ${pauseOnHover ? 'pause-on-hover' : ''} ${className}`}
-      style={style}
-    >
-      {showBorder && <span className="gradient-overlay" aria-hidden="true" />}
-      <span className="text-content">{children}</span>
-    </span>
-  );
-}
-
-interface RotatingTextProps {
-  texts: string[];
-  rotationInterval?: number;
-  staggerDuration?: number;
-  staggerFrom?: 'first' | 'last' | 'center';
-  loop?: boolean;
-  auto?: boolean;
-  splitBy?: 'characters' | 'words' | 'lines';
-  mainClassName?: string;
-  splitLevelClassName?: string;
-  elementLevelClassName?: string;
-  onNext?: (index: number) => void;
-}
-
-const RotatingText = forwardRef<any, RotatingTextProps>(
-  (
-    {
-      texts,
-      rotationInterval = 2000,
-      staggerDuration = 0.025,
-      staggerFrom = 'first',
-      loop = true,
-      auto = true,
-      splitBy = 'characters',
-      mainClassName,
-      splitLevelClassName,
-      elementLevelClassName,
-      onNext,
-      ...rest
-    },
-    ref
-  ) => {
-    const [currentTextIndex, setCurrentTextIndex] = useState(0);
-    const currentText = texts[currentTextIndex] || '';
-
-    const parts = useMemo(() => {
-      if (splitBy === 'words') return currentText.split(' ');
-      if (splitBy === 'lines') return currentText.split('\n');
-      return Array.from(currentText);
-    }, [currentText, splitBy]);
-
-    const next = () => {
-      setCurrentTextIndex((currentIndex) => {
-        const nextIndex = currentIndex === texts.length - 1 ? (loop ? 0 : currentIndex) : currentIndex + 1;
-        if (nextIndex !== currentIndex && onNext) onNext(nextIndex);
-        return nextIndex;
-      });
-    };
-
-    const previous = () => {
-      setCurrentTextIndex((currentIndex) => {
-        const previousIndex = currentIndex === 0 ? (loop ? texts.length - 1 : currentIndex) : currentIndex - 1;
-        if (previousIndex !== currentIndex && onNext) onNext(previousIndex);
-        return previousIndex;
-      });
-    };
-
-    const jumpTo = (index: number) => {
-      const validIndex = Math.max(0, Math.min(index, texts.length - 1));
-      setCurrentTextIndex(validIndex);
-      if (onNext) onNext(validIndex);
-    };
-
-    const reset = () => jumpTo(0);
-
-    React.useImperativeHandle(ref, () => ({ next, previous, jumpTo, reset }));
-
-    useEffect(() => {
-      if (!auto) return undefined;
-      const intervalId = window.setInterval(next, rotationInterval);
-      return () => window.clearInterval(intervalId);
-    });
-
-    const getDelay = (index: number) => {
-      if (staggerFrom === 'last') return (parts.length - 1 - index) * staggerDuration;
-      if (staggerFrom === 'center') return Math.abs(Math.floor(parts.length / 2) - index) * staggerDuration;
-      return index * staggerDuration;
-    };
-
-    return (
-      <span className={`text-rotate ${mainClassName || ''}`} {...rest}>
-        <span className="text-rotate-sr-only">{currentText}</span>
-        <span className={`${splitBy === 'lines' ? 'text-rotate-lines' : 'text-rotate-word'} ${splitLevelClassName || ''}`} aria-hidden="true">
-          {parts.map((part, index) => (
-            <span
-              className={`text-rotate-element ${elementLevelClassName || ''}`}
-              key={`${currentTextIndex}-${part}-${index}`}
-              style={{ animationDelay: `${getDelay(index)}s` }}
-            >
-              {part === ' ' ? <span className="text-rotate-space"> </span> : part}
-            </span>
-          ))}
-        </span>
-      </span>
-    );
-  }
-);
-
-RotatingText.displayName = 'RotatingText';
-
-// ============================================================================
-// NAVBAR (INTEGRATED WITH AUTH)
-// ============================================================================
 function PublicNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, userProfile, loading } = useAuth();
@@ -402,11 +87,11 @@ function PublicNavbar() {
         </Link>
 
         <div className="nav-links">
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#about">About</a>
-          <a href="#process">Process</a>
-          <a href="#contact">Contact</a>
+          {NAV_SECTIONS.map((item) => (
+            <a key={item.href} href={item.href}>
+              {item.label}
+            </a>
+          ))}
         </div>
 
         <div className="nav-actions">
@@ -462,11 +147,11 @@ function PublicNavbar() {
           </div>
 
           <div className="mobile-drawer-links">
-            <a href="#home" onClick={closeMenu}>Home</a>
-            <a href="#services" onClick={closeMenu}>Services</a>
-            <a href="#about" onClick={closeMenu}>About</a>
-            <a href="#process" onClick={closeMenu}>Process</a>
-            <a href="#contact" onClick={closeMenu}>Contact</a>
+            {NAV_SECTIONS.map((item) => (
+              <a key={item.href} href={item.href} onClick={closeMenu}>
+                {item.label}
+              </a>
+            ))}
           </div>
 
           <div className="mobile-drawer-actions">
@@ -500,7 +185,7 @@ function PublicNavbar() {
 }
 
 // ============================================================================
-// HERO SECTION
+// HERO
 // ============================================================================
 function Hero() {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -510,7 +195,7 @@ function Hero() {
       <div className="hero-copy">
         <div className="eyebrow">
           <Activity size={16} />
-          Early Alzheimer's Detection
+          Early Alzheimer&apos;s Detection
         </div>
 
         <h1 ref={headingRef}>
@@ -526,7 +211,9 @@ function Hero() {
         </h1>
 
         <p>
-          AI4NEURO unifies EEG, MRI, and PET intelligence into a seamless clinical experience, enabling early cognitive risk screening and generating specialist-ready reports.
+          AI4NEURO brings EEG and MRI analysis into a single clinical workflow — one upload,
+          one result screen, and specialist-ready reports for the whole care team.
+          PET support is on the roadmap.
         </p>
 
         <div className="hero-actions">
@@ -561,10 +248,10 @@ function Hero() {
 // STATS STRIP
 // ============================================================================
 const stats = [
-  { icon: <DatabaseZap size={22} />, value: '3', label: 'Modalities unified' },
-  { icon: <ClipboardCheck size={22} />, value: 'AI', label: 'Decision support' },
-  { icon: <Clock3 size={22} />, value: 'Early', label: 'Risk indicators' },
-  { icon: <ShieldCheck size={22} />, value: 'Secure', label: 'Data-first workflow' },
+  { icon: <Layers size={22} />, value: '2', label: 'Modalities live — EEG and MRI' },
+  { icon: <UsersRound size={22} />, value: '5', label: 'Roles, each hospital-scoped' },
+  { icon: <FileStack size={22} />, value: '3', label: 'Reports per analysis' },
+  { icon: <ShieldCheck size={22} />, value: 'Isolated', label: 'One data boundary per hospital' },
 ];
 
 function StatsStrip() {
@@ -605,6 +292,7 @@ const services = [
     text: 'Metabolic and amyloid-sensitive PET support for earlier specialist-led interpretation.',
     visual: 'pet',
     image: '/services/petpatient.png',
+    comingSoon: true,
   },
 ];
 
@@ -616,7 +304,7 @@ function ServicesSection() {
         <h2 className="text-3xl font-bold">
           AI-powered diagnostics for{' '}
           <RotatingText
-            texts={['EEG', 'MRI', 'PET']}
+            texts={['EEG', 'MRI']}
             mainClassName="services-rotating-text"
             splitLevelClassName="services-rotating-word"
             elementLevelClassName="services-rotating-letter"
@@ -632,73 +320,30 @@ function ServicesSection() {
 
       <div className="service-grid">
         {services.map((service) => (
-          <article className="service-card" key={service.title}>
+          <article
+            className={`service-card ${service.comingSoon ? 'service-card-soon' : ''}`}
+            key={service.title}
+          >
             <div className={`service-visual service-visual-${service.visual}`}>
               <img className="service-image" src={service.image} alt={`${service.title} patient`} />
             </div>
-            <a className="icon-button service-arrow" href="#contact" aria-label={`Open ${service.title}`}>
-              <MoveUpRight size={19} />
-            </a>
+
+            {service.comingSoon ? (
+              <span className="service-badge">Coming soon</span>
+            ) : (
+              <a className="icon-button service-arrow" href="#contact" aria-label={`Open ${service.title}`}>
+                <MoveUpRight size={19} />
+              </a>
+            )}
+
             <div className="service-icon">{service.icon}</div>
             <h3 className="text-3xl font-bold">{service.title}</h3>
             <p>{service.text}</p>
+            {service.comingSoon && (
+              <p className="service-note">Not yet available in the platform.</p>
+            )}
           </article>
         ))}
-      </div>
-    </section>
-  );
-}
-
-// ============================================================================
-// ABOUT SECTION
-// ============================================================================
-function AboutSection() {
-  return (
-    <section className="about-section section-shell" id="about">
-      <div className="about-visual">
-        <div className="about-image">
-          <img src="/landing_homepage/DoctorsGroup.png" alt="Doctors group" className="about-doctors-image" />
-        </div>
-        <div className="about-floating-card">
-          <BrainCircuit size={28} />
-          <strong>Multimodal AI</strong>
-          <small>MRI + EEG + PET interpretation support</small>
-        </div>
-      </div>
-
-      <div className="about-copy">
-        <div className="eyebrow">About AI4NEURO</div>
-        <h2 className="text-3xl font-bold">
-          <GradientText
-            colors={['#021f3d', '#064f8f', '#0b6fb3']}
-            animationSpeed={8}
-            showBorder={false}
-            className="about-gradient-heading"
-          >
-            Built for clinicians working against the clock.
-          </GradientText>
-        </h2>
-        <p>
-          AI4NEURO supports early Alzheimer's detection by combining scan findings, signal
-          behavior, and biomarker views into a clean diagnostic dashboard. The experience is
-          designed for clarity, not clutter.
-        </p>
-        <div className="about-list">
-          <span>
-            <ShieldPlus size={20} />
-            Privacy-aware patient handling
-          </span>
-          <span>
-            <ShieldPlus size={20} />
-            Specialist-ready visual summaries
-          </span>
-        </div>
-        <a className="primary-button" href="#contact">
-          Book Screening
-          <span>
-            <MoveUpRight size={17} />
-          </span>
-        </a>
       </div>
     </section>
   );
@@ -708,10 +353,26 @@ function AboutSection() {
 // PROCESS SECTION
 // ============================================================================
 const steps = [
-  { icon: <ScanHeart size={23} />, title: 'Scan Intake', text: 'MRI, EEG, and PET records are organized into a single patient view.' },
-  { icon: <Sparkles size={23} />, title: 'AI Analysis', text: 'Models highlight regions, rhythm shifts, and biomarker patterns linked to decline.' },
-  { icon: <FileSearch size={23} />, title: 'Clinical Review', text: 'Findings are shaped into a concise report for specialist interpretation.' },
-  { icon: <MessageSquareText size={23} />, title: 'Care Discussion', text: 'Patients and care teams receive next-step guidance with clearer context.' },
+  {
+    icon: <UploadCloud size={23} />,
+    title: 'Upload',
+    text: 'A radiologist or doctor uploads an EEG recording or MRI scan against a patient record.',
+  },
+  {
+    icon: <Sparkles size={23} />,
+    title: 'AI Analysis',
+    text: 'The modality pipeline runs in the background while the session reports live progress.',
+  },
+  {
+    icon: <FileSearch size={23} />,
+    title: 'Reports Generated',
+    text: 'Findings and visualizations become patient, clinician, and technical PDFs automatically.',
+  },
+  {
+    icon: <MessageSquareText size={23} />,
+    title: 'Care Team Reviews',
+    text: 'Results appear in the dashboard of everyone on that patient’s care team, and nowhere else.',
+  },
 ];
 
 function ProcessSection() {
@@ -745,6 +406,240 @@ function ProcessSection() {
 }
 
 // ============================================================================
+// ROLES SECTION
+// ============================================================================
+const roles = [
+  {
+    role: 'super_admin' as const,
+    icon: <Building2 size={22} />,
+    text: 'Platform-wide oversight — every hospital, every user, every scan, and full analytics.',
+  },
+  {
+    role: 'admin' as const,
+    icon: <Landmark size={22} />,
+    text: 'Runs a single hospital: creates doctors, radiologists and patients, and assigns care teams.',
+  },
+  {
+    role: 'doctor' as const,
+    icon: <Stethoscope size={22} />,
+    text: 'Their assigned patients end to end, with the ability to start a new analysis.',
+  },
+  {
+    role: 'radiologist' as const,
+    icon: <ScanLine size={22} />,
+    text: 'Uploads scans and tracks the sessions they run through the platform.',
+  },
+  {
+    role: 'patient' as const,
+    icon: <Users size={22} />,
+    text: 'Read-only access to their own completed reports — and nothing beyond them.',
+  },
+];
+
+function RolesSection() {
+  return (
+    <section className="roles-section section-shell" id="roles">
+      <div className="section-heading">
+        <div className="eyebrow">Built for every role</div>
+        <h2 className="text-3xl font-bold">
+          One platform, five points of view.
+        </h2>
+        <p className="section-lede">
+          Access is decided by role and by hospital. Nobody sees a record that does not
+          belong to their institution, and every check fails closed.
+        </p>
+      </div>
+
+      <div className="roles-grid">
+        {roles.map((entry) => (
+          <article className={`role-card role-card-${ROLE_META[entry.role].accent}`} key={entry.role}>
+            <span className="role-icon">{entry.icon}</span>
+            <h3>{ROLE_META[entry.role].label}</h3>
+            <p>{entry.text}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// OUTPUTS SECTION — what you actually get back
+// ============================================================================
+const reportTypes = [
+  {
+    icon: <HeartPulse size={22} />,
+    title: 'Patient report',
+    text: 'A plain-language summary of the finding, written to be read by the person it is about.',
+  },
+  {
+    icon: <Stethoscope size={22} />,
+    title: 'Clinician report',
+    text: 'The finding alongside the supporting metrics and visualizations a specialist needs.',
+  },
+  {
+    icon: <FileText size={22} />,
+    title: 'Technical report',
+    text: 'Full model output: probability breakdown, per-trial consistency, and every generated chart.',
+  },
+];
+
+const resultContents = [
+  'Prediction with a confidence score',
+  'Probability across CN, MCI and AD',
+  'EEG timeseries, PSD and similarity plots',
+  'MRI volume metrics against normative ranges',
+  'An interactive slice viewer for MRI scans',
+];
+
+function OutputsSection() {
+  return (
+    <section className="outputs-section section-shell" id="outputs">
+      <div className="section-heading">
+        <div className="eyebrow">What you get back</div>
+        <h2 className="text-3xl font-bold">Three reports from one upload.</h2>
+        <p className="section-lede">
+          Every completed analysis produces the same set of documents, written for three
+          different readers — generated automatically, no formatting work required.
+        </p>
+      </div>
+
+      <div className="outputs-layout">
+        <div className="outputs-grid">
+          {reportTypes.map((report) => (
+            <article className="output-card" key={report.title}>
+              <span className="output-icon">{report.icon}</span>
+              <h3>{report.title}</h3>
+              <p>{report.text}</p>
+            </article>
+          ))}
+        </div>
+
+        <aside className="outputs-panel">
+          <div className="eyebrow">
+            <ListChecks size={16} />
+            In every result
+          </div>
+          <ul className="outputs-list">
+            {resultContents.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// SECURITY SECTION
+// ============================================================================
+const securityPoints = [
+  {
+    icon: <ShieldCheck size={22} />,
+    title: 'Hospital-scoped isolation',
+    text: 'Every clinical record resolves to exactly one hospital. Cross-tenant reads are denied by default, not by exception.',
+  },
+  {
+    icon: <KeyRound size={22} />,
+    title: 'Verified on every request',
+    text: 'Each API call carries a signed token, and the server re-checks role, hospital and account status before answering.',
+  },
+  {
+    icon: <Lock size={22} />,
+    title: 'Private storage',
+    text: 'Scans, generated assets and reports live in private buckets, reachable only through short-lived signed links.',
+  },
+  {
+    icon: <ListChecks size={22} />,
+    title: 'Recorded activity',
+    text: 'User management and analysis activity are written to an audit trail that administrators can review.',
+  },
+];
+
+function SecuritySection() {
+  return (
+    <section className="security-section section-shell" id="security">
+      <div className="security-panel">
+        <div className="security-intro">
+          <div className="eyebrow">Security &amp; tenancy</div>
+          <h2 className="text-3xl font-bold">Patient data stays where it belongs.</h2>
+          <p>
+            Multi-tenancy is enforced in the backend, not assumed in the interface.
+            A hospital&apos;s data is invisible to every other hospital on the platform.
+          </p>
+        </div>
+
+        <div className="security-grid">
+          {securityPoints.map((point) => (
+            <article className="security-card" key={point.title}>
+              <span>{point.icon}</span>
+              <h3>{point.title}</h3>
+              <p>{point.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// ABOUT SECTION
+// ============================================================================
+function AboutSection() {
+  return (
+    <section className="about-section section-shell" id="about">
+      <div className="about-visual">
+        <div className="about-image">
+          <img src="/landing_homepage/DoctorsGroup.png" alt="Doctors group" className="about-doctors-image" />
+        </div>
+        <div className="about-floating-card">
+          <BrainCircuit size={28} />
+          <strong>Multimodal AI</strong>
+          <small>MRI + EEG interpretation support</small>
+        </div>
+      </div>
+
+      <div className="about-copy">
+        <div className="eyebrow">About AI4NEURO</div>
+        <h2 className="text-3xl font-bold">
+          <GradientText
+            colors={['#021f3d', '#064f8f', '#0b6fb3']}
+            animationSpeed={8}
+            showBorder={false}
+            className="about-gradient-heading"
+          >
+            Built for clinicians working against the clock.
+          </GradientText>
+        </h2>
+        <p>
+          AI4NEURO supports early Alzheimer&apos;s detection by combining scan findings and
+          signal behaviour into a clean diagnostic dashboard. The experience is designed
+          for clarity, not clutter.
+        </p>
+        <div className="about-list">
+          <span>
+            <ShieldPlus size={20} />
+            Privacy-aware patient handling
+          </span>
+          <span>
+            <ShieldPlus size={20} />
+            Specialist-ready visual summaries
+          </span>
+        </div>
+        <a className="primary-button" href="#contact">
+          Book Screening
+          <span>
+            <MoveUpRight size={17} />
+          </span>
+        </a>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
 // CONTACT SECTION
 // ============================================================================
 function ContactSection() {
@@ -755,8 +650,8 @@ function ContactSection() {
           <div className="eyebrow">Contact</div>
           <h2 className="text-2xl font-bold">Start a neuro screening conversation.</h2>
           <p>
-            Replace these details with your real clinic, lab, or research contact information
-            when your content is ready.
+            Talk to us about bringing AI4NEURO into your hospital, laboratory, or research
+            programme — including a walkthrough of the workflow with your own team.
           </p>
         </div>
 
@@ -792,19 +687,50 @@ function ContactSection() {
 function Footer() {
   return (
     <footer className="footer section-shell">
-      <Link className="footer-brand" href="/landing">
-        <img
-          src="/landing_homepage/AI4NEuroLOGO copy.png"
-          alt="AI4Neuro Logo"
-          style={{ height: '30px', marginRight: '6px' }}
-        />
-        <img
-          src="/landing_homepage/AI4NeuroText.png"
-          alt="AI4Neuro"
-          style={{ height: '15px' }}
-        />
-      </Link>
-      <p>Early Alzheimer's detection through MRI, EEG, and PET intelligence.</p>
+      <div className="footer-main">
+        <div className="footer-identity">
+          <Link className="footer-brand" href="/landing">
+            <img
+              src="/landing_homepage/AI4NEuroLOGO copy.png"
+              alt="AI4Neuro Logo"
+              style={{ height: '30px', marginRight: '6px' }}
+            />
+            <img
+              src="/landing_homepage/AI4NeuroText.png"
+              alt="AI4Neuro"
+              style={{ height: '15px' }}
+            />
+          </Link>
+          <p>Early Alzheimer&apos;s detection through EEG and MRI intelligence.</p>
+        </div>
+
+        <nav className="footer-links" aria-label="Footer navigation">
+          <strong>Explore</strong>
+          {NAV_SECTIONS.map((item) => (
+            <a key={item.href} href={item.href}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="footer-links">
+          <strong>Get in touch</strong>
+          <a href="mailto:info@praxiatech.ai">info@praxiatech.ai</a>
+          <a href="tel:+919413259268">+91 94132 59268</a>
+          <span>Indore, Madhya Pradesh</span>
+          <Link href="/login">Sign in</Link>
+        </div>
+      </div>
+
+      <div className="footer-legal">
+        <p className="footer-disclaimer">
+          AI4NEURO provides decision support for qualified clinicians. It is not a diagnostic
+          device and is not a substitute for professional clinical judgement.
+        </p>
+        <p className="footer-copyright">
+          &copy; {new Date().getFullYear()} AI4NEURO. All rights reserved.
+        </p>
+      </div>
     </footer>
   );
 }
@@ -819,8 +745,11 @@ export default function LandingPage() {
       <Hero />
       <StatsStrip />
       <ServicesSection />
-      <AboutSection />
       <ProcessSection />
+      <RolesSection />
+      <OutputsSection />
+      <SecuritySection />
+      <AboutSection />
       <ContactSection />
       <Footer />
     </div>
