@@ -109,22 +109,24 @@ See `docs/architecture.md` for the unified result shape and the data model.
 
 ## Run it
 
-### Local dev (two terminals)
+### Local dev
+
+Development is fully local: frontend and backend run on this machine against the
+hosted Supabase project. Model checkpoints live in `backend/models/` and the
+backend's defaults already point there.
 
 ```bash
-# Backend
-cd platform/backend
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements/dev.txt          # api + tests (add eeg.txt/mri.txt to run real pipelines)
-cp .env.example .env                          # fill SUPABASE_* when available
-uvicorn app.main:app --reload --port 8000     # http://localhost:8000/docs
-
-# Frontend
-cd platform/frontend
-npm install
-cp .env.example .env.local                    # NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-npm run dev                                    # http://localhost:3000
+cd platform
+make setup      # backend venv (Python 3.11) + all requirements, npm ci, env files
+# fill SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY in backend/.env
+# fill NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local
+make dev        # backend :8000 + frontend :3000 together
+# or in two terminals: make backend / make frontend
+make test       # pytest + tsc + eslint
 ```
+
+- API docs: http://localhost:8000/docs · health: http://localhost:8000/api/v1/health
+- App: http://localhost:3000
 
 Without Supabase configured the backend still boots (health reports `not_configured`,
 DB-backed routes return a clean `503`) and `AUTH_DEV_BYPASS=true` injects a dev admin,
@@ -140,7 +142,7 @@ docker compose up --build
 ```
 
 Supabase is an **external managed service** (not a container). Apply the SQL in
-`../supabase/migrations/` and create the buckets first — see `docs/deployment.md`.
+`../supabase/migrations/` and create the buckets first — see `docs/archive/cloud-deployment/deployment.md`.
 
 ---
 
@@ -162,7 +164,7 @@ platform/
     src/features/analysis/  types, api, hooks, components
     src/app/analysis/ new + [id] · src/app/dashboard · src/app/technician
     Dockerfile        Next standalone
-  docs/               architecture.md · deployment.md
+  docs/               architecture.md · archive/cloud-deployment/ (old Oracle/R2/Vercel runbooks)
   docker-compose.yml
 ../supabase/migrations/   0001_unified_analysis.sql · 0002_pipeline_options.sql
 ```
@@ -177,4 +179,4 @@ platform/
 - **Frontend:** `tsc --noEmit` clean, ESLint clean, `next build` succeeds (standalone).
 - **Deploy:** Dockerfiles + compose written; `docker compose config` validates. Image
   builds and a live end-to-end run require Docker + Supabase creds + model weights
-  (the sandbox has no Docker daemon) — see `docs/deployment.md`.
+  (the sandbox has no Docker daemon) — see `docs/archive/cloud-deployment/deployment.md`.

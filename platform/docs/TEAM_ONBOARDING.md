@@ -24,11 +24,11 @@ GitHub should not contain:
 - MRI checkpoint files
 - local `.DS_Store` files
 
-Large model files are runtime artifacts. They must live in object storage and be
-synced to each developer's local disk or to the Oracle VM.
+Large model files are runtime artifacts. They live on each developer's local disk
+under `platform/backend/models/` (see section 4).
 
 Detailed artifact deployment guide:
-[CHECKPOINT_DEPLOYMENT.md](./CHECKPOINT_DEPLOYMENT.md).
+[CHECKPOINT_DEPLOYMENT.md](./archive/cloud-deployment/CHECKPOINT_DEPLOYMENT.md).
 
 Pipeline execution reference:
 [PIPELINE_EXECUTION_REFERENCE.md](./PIPELINE_EXECUTION_REFERENCE.md).
@@ -202,55 +202,22 @@ user-facing error.
 
 ## 4. Model Artifact Distribution
 
-Recommended shared storage:
-
-```text
-Cloudflare R2 or Oracle Object Storage
-```
-
-Recommended local runtime layout:
+Development is local-first. Get the checkpoint files from a teammate and place
+them here; the backend's default settings already point at this layout, so no
+env overrides are needed:
 
 ```text
 platform/backend/models/
   eeg/checkpoints/
-    classification/...
+    classification/ADFD-Indep/...
   mri/
     ConVit_checkpoint.pth
+platform/backend/representative/
+  cn repr.npy · mci repr.npy · ad repr.npy
 ```
 
-Recommended Oracle VM runtime layout:
-
-```text
-/opt/ai4neuro/models/
-  eeg/checkpoints/
-  eeg/reference/
-  mri/ConViT_model.pth
-```
-
-Team rule:
-
-```text
-Download or sync model artifacts once. Do not commit them. Do not download them
-on every request.
-```
-
-Use the repo sync helper after the team creates a shared R2/Oracle bucket:
-
-```bash
-cd platform
-AWS_ACCESS_KEY_ID=... \
-AWS_SECRET_ACCESS_KEY=... \
-MODEL_BUCKET=ai4neuro-models \
-MODEL_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com \
-MODEL_PREFIX=ai4neuro \
-./scripts/sync_models_from_object_storage.sh
-```
-
-For Oracle Object Storage S3 compatibility, use Oracle's S3 endpoint as
-`MODEL_ENDPOINT_URL` and an S3-compatible access key pair.
-
-For the full upload/sync flow and ownership split, use:
-[CHECKPOINT_DEPLOYMENT.md](./CHECKPOINT_DEPLOYMENT.md).
+Do not commit model files. The old cloud sync scripts and Oracle/R2 runbooks are
+kept for reference in [archive/cloud-deployment/](./archive/cloud-deployment/).
 
 ## 5. CAT12 Boundary
 
@@ -275,8 +242,7 @@ Recommended ownership:
 
 - One teammate owns CAT12 setup and smoke testing.
 - Everyone else keeps `USE_CAT12_PREPROCESSING=false`.
-- Checkpoints are shared through object storage using
-  [CHECKPOINT_DEPLOYMENT.md](./CHECKPOINT_DEPLOYMENT.md).
+- Checkpoints are shared directly between teammates (see section 4).
 
 ## 6. Supabase Keys And JWT Verification
 

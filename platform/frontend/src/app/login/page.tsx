@@ -130,7 +130,7 @@ export default function LoginPage() {
   // Show loading while checking auth
   if (checkingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7fafc]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="flex gap-2">
             <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -144,7 +144,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7fafc] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Minimal header */}
       <header className="px-6 py-5 flex items-center justify-between gap-4">
         <Link href="/landing" className="inline-flex items-center">

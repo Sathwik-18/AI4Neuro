@@ -84,13 +84,13 @@ Do not commit model binaries.
 Deployment guide:
 
 ```text
-platform/docs/CHECKPOINT_DEPLOYMENT.md
+platform/docs/archive/cloud-deployment/CHECKPOINT_DEPLOYMENT.md
 ```
 
 Recommended ownership:
 
 - model owner uploads EEG/MRI artifacts to R2 or Oracle Object Storage
-- teammates run `platform/scripts/sync_models_from_object_storage.sh`
+- teammates run `platform/docs/archive/cloud-deployment/sync_models_from_object_storage.sh`
 - CAT12 owner follows `platform/docs/CAT12_SETUP.md` separately
 
 ## Supabase Auth Plan

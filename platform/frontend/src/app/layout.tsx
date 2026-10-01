@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lexend, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, Anton, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -7,10 +7,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { PageTransitionLoader } from "@/components/shared/PageTransition";
 import "./globals.css";
 
-const lexend = Lexend({
-  variable: "--font-lexend",
+// Variable font (no fixed weights): the landing VariableProximity effect animates `wght`.
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+});
+
+const anton = Anton({
+  variable: "--font-anton",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -37,7 +43,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${lexend.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${anton.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

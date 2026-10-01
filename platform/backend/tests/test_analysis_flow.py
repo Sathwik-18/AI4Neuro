@@ -162,7 +162,11 @@ def test_create_analysis_rejects_hospital_mismatch(client):
     assert res.json()["error"]["code"] == "hospital_mismatch"
 
 
-def test_create_analysis_defaults_hospital_to_own(client):
+def test_create_analysis_defaults_hospital_to_own(client, fake_supabase):
+    # The doctor is auto-assigned as doctor_id, so their profile must exist.
+    fake_supabase.table("user_profiles").insert(
+        {"id": "d1", "role": "doctor", "hospital_id": "h1"}
+    ).execute()
     client.app.dependency_overrides[get_current_user] = lambda: Principal(
         user_id="d1", role="doctor", hospital_id="h1", is_dev=False
     )

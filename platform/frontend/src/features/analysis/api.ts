@@ -3,18 +3,31 @@
 import { apiClient } from '@/lib/api/client';
 import type {
   AnalysisResultResponse,
+  AnalysisStats,
   CancelResponse,
   CreateAnalysisResponse,
   ReportsResponse,
   RetryResponse,
+  SessionListItem,
   SessionStatusResponse,
+  StatsRange,
+  TrendSpan,
 } from './types';
+
+export type ListSort = 'newest' | 'oldest' | 'patient_asc' | 'patient_desc' | 'confidence_desc';
 
 export interface ListParams {
   modality?: string;
   status?: string;
   patient_id?: string;
   doctor_id?: string;
+  radiologist_id?: string;
+  analysis_type?: string;
+  /** CN | MCI | AD */
+  prediction?: string;
+  /** routine | priority | urgent */
+  priority?: string;
+  sort?: ListSort;
   mine?: boolean;
   q?: string;
   /** YYYY-MM-DD, inclusive on both ends. */
@@ -26,26 +39,30 @@ export interface ListParams {
   hospital_id?: string;
 }
 
+export interface StatsParams {
+  range?: StatsRange;
+  trend?: TrendSpan;
+  modality?: string;
+  analysis_type?: string;
+  doctor_id?: string;
+  radiologist_id?: string;
+  hospital_id?: string;
+  mine?: boolean;
+}
+
 export interface PaginatedSessions {
-  items: SessionStatusResponse[];
+  items: SessionListItem[];
   total: number;
   limit: number;
   offset: number;
 }
 
-function buildQuery(params: ListParams): string {
+function buildQuery(params: object): string {
   const q = new URLSearchParams();
-  if (params.modality) q.set('modality', params.modality);
-  if (params.status) q.set('status', params.status);
-  if (params.patient_id) q.set('patient_id', params.patient_id);
-  if (params.doctor_id) q.set('doctor_id', params.doctor_id);
-  if (params.mine) q.set('mine', 'true');
-  if (params.q) q.set('q', params.q);
-  if (params.date_from) q.set('date_from', params.date_from);
-  if (params.date_to) q.set('date_to', params.date_to);
-  if (params.limit) q.set('limit', String(params.limit));
-  if (params.offset) q.set('offset', String(params.offset));
-  if (params.hospital_id) q.set('hospital_id', params.hospital_id);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '' || value === false || value === 0) continue;
+    q.set(key, String(value));
+  }
   const qs = q.toString();
   return qs ? `?${qs}` : '';
 }
@@ -67,6 +84,20 @@ export const analysisApi = {
    * real pagination UI instead of discarding it. */
   listPaginated(params: ListParams = {}): Promise<PaginatedSessions> {
     return apiClient.get<PaginatedSessions>(`/api/v1/analysis${buildQuery(params)}`);
+  },
+  /** Every row matching `params`, paging through the 200-row API cap. */
+  async listAll(params: ListParams = {}, max = 1000): Promise<PaginatedSessions> {
+    const first = await this.listPaginated({ ...params, limit: 200, offset: 0 });
+    const items = [...first.items];
+    while (items.length < Math.min(first.total, max)) {
+      const next = await this.listPaginated({ ...params, limit: 200, offset: items.length });
+      if (next.items.length === 0) break;
+      items.push(...next.items);
+    }
+    return { ...first, items, limit: items.length };
+  },
+  stats(params: StatsParams = {}): Promise<AnalysisStats> {
+    return apiClient.get<AnalysisStats>(`/api/v1/analysis/stats${buildQuery(params)}`);
   },
   status(sessionId: string): Promise<SessionStatusResponse> {
     return apiClient.get<SessionStatusResponse>(`/api/v1/analysis/${sessionId}`);

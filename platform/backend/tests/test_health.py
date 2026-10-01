@@ -10,11 +10,16 @@ def test_health_ok():
         assert res.json()["status"] == "ok"
 
 
-def test_health_database_not_configured():
+def test_health_database_not_configured(monkeypatch):
+    from app.core.config import get_settings
+
+    # A developer's local .env may hold real Supabase keys; blank them here.
+    settings = get_settings()
+    monkeypatch.setattr(settings, "supabase_url", None)
+    monkeypatch.setattr(settings, "supabase_service_role_key", None)
     with TestClient(create_app()) as client:
         res = client.get("/api/v1/health/database")
         assert res.status_code == 200
-        # No Supabase configured in the test env.
         assert res.json()["configured"] is False
 
 

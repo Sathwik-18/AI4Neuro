@@ -5,8 +5,8 @@ the backend routes to the right pipeline internally. Result shapes are identical
 across modalities.
 """
 
-from __future__ import annotations
-
+# No `from __future__ import annotations`: slowapi's @limiter.limit wrapper
+# hides this module's globals, so FastAPI can't resolve string annotations.
 import json
 
 from fastapi import (
@@ -35,14 +35,17 @@ limiter = Limiter(key_func=get_remote_address)
 from app.schemas.analysis import (
     ALLOWED_EXTENSIONS,
     AnalysisResultResponse,
+    AnalysisStatsResponse,
     CancelResponse,
     CreateAnalysisResponse,
     Modality,
     ReportsResponse,
     ReportUrls,
     RetryResponse,
+    SessionListItem,
     SessionStatus,
     SessionStatusResponse,
+    TrendBucket,
 )
 from app.schemas.common import PaginatedResponse
 from app.services.database import DatabaseService
@@ -74,10 +77,8 @@ def _validate_upload(modality: str, filename: str) -> None:
 
 def _normalize_analysis_type(modality: str, analysis_type: str) -> str:
     value = (analysis_type or "").strip().lower()
-    if modality == Modality.mri.value:
-        # MRI is multiclass-only: the ConViT checkpoint is trained multiclass-only,
-        # so there is no binary MRI path regardless of what the client requests.
-        return "multiclass"
+    if modality == Modality.mri.value and value == "ad-only":
+        value = "binary"  # legacy frontend alias
     if modality == Modality.eeg.value:
         # EEG is ADFD-only: the ADSZ (binary) checkpoint is retired server-side.
         # Force multiclass regardless of client input so pre-update frontend
@@ -277,34 +278,42 @@ async def create_analysis(
     )
 
 
-@router.get("", response_model=PaginatedResponse[SessionStatusResponse])
-def list_analyses(
-    modality: str | None = Query(default=None),
-    status_filter: str | None = Query(default=None, alias="status"),
-    patient_id: str | None = Query(default=None),
-    doctor_id: str | None = Query(default=None),
-    radiologist_id: str | None = Query(default=None),
-    hospital_id: str | None = Query(default=None),
-    mine: bool = Query(default=False),
-    q: str | None = Query(default=None),
-    date_from: str | None = Query(default=None, description="YYYY-MM-DD, inclusive"),
-    date_to: str | None = Query(default=None, description="YYYY-MM-DD, inclusive"),
-    limit: int = Query(default=50, ge=1, le=200),
-    offset: int = Query(default=0, ge=0),
-    principal: Principal = Depends(get_current_user),
-    db: DatabaseService = Depends(get_database),
-) -> PaginatedResponse[SessionStatusResponse]:
-    """Role-scoped list of analysis sessions the caller may see (doc 8.5).
+_SORTS = {"newest", "oldest", "patient_asc", "patient_desc", "confidence_desc"}
+_STATS_RANGES = {"today": 0, "week": 6, "month": 29, "quarter": 89, "all": None}
+_TREND_SPANS = {"8w": ("week", 8), "12w": ("week", 12), "6m": ("month", 6), "12m": ("month", 12)}
 
-    super_admin sees across all hospitals by default, or may narrow to one
-    hospital via ``hospital_id``; every other role is pinned to their own
-    hospital regardless of what (if anything) they pass. Every row is then
-    checked with the same per-session permission used for reads.
-    """
+
+def _display_names(db: DatabaseService, hospital: str | None) -> dict[str, str]:
+    return cached(
+        f"hospital:users:names:{hospital or 'ALL'}",
+        lambda: {str(u["id"]): u.get("full_name") or "" for u in db.list_user_profiles(hospital_id=hospital)},
+    )
+
+
+def _enriched_sessions(
+    principal: Principal,
+    db: DatabaseService,
+    *,
+    modality: str | None = None,
+    status_filter: str | None = None,
+    patient_id: str | None = None,
+    doctor_id: str | None = None,
+    radiologist_id: str | None = None,
+    hospital_id: str | None = None,
+    mine: bool = False,
+    analysis_type: str | None = None,
+    prediction: str | None = None,
+    priority: str | None = None,
+    q: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> tuple[list[dict], dict[str, str]]:
+    """Sessions the caller may read, joined with outcome + review priority and
+    filtered. super_admin may narrow by hospital; every other role is pinned to
+    their own hospital, and each row passes the same per-session read check."""
+    from app.services.triage import canonical_analysis_type, canonical_prediction, review_priority
+
     hospital = hospital_id if principal.role == "super_admin" else principal.hospital_id
-    # db.list_sessions caches the raw per-hospital fetch itself (30s TTL,
-    # invalidated on any session write) and applies these equality filters in
-    # Python on the cached set — see DatabaseService.list_sessions.
     rows = db.list_sessions(
         modality=modality,
         status=status_filter,
@@ -313,46 +322,201 @@ def list_analyses(
         radiologist_id=radiologist_id,
         hospital_id=hospital,
     )
-    visible = [
-        r
-        for r in rows
-        if permissions.can_read_session(
-            principal.user_id, principal.role, principal.hospital_id, r
-        )
+    rows = [
+        r for r in rows
+        if permissions.can_read_session(principal.user_id, principal.role, principal.hospital_id, r)
     ]
     if mine:
-        visible = [r for r in visible if str(r.get("uploaded_by")) == str(principal.user_id)]
+        rows = [r for r in rows if str(r.get("uploaded_by")) == str(principal.user_id)]
+    if analysis_type:
+        rows = [r for r in rows if canonical_analysis_type(r.get("analysis_type")) == analysis_type]
     if date_from:
-        visible = [r for r in visible if str(r.get("created_at") or "")[:10] >= date_from]
+        rows = [r for r in rows if str(r.get("created_at") or "")[:10] >= date_from]
     if date_to:
-        visible = [r for r in visible if str(r.get("created_at") or "")[:10] <= date_to]
+        rows = [r for r in rows if str(r.get("created_at") or "")[:10] <= date_to]
+
+    outcomes = db.results_summary()
+    # Review priority is clinician triage language; patients never see it.
+    show_priority = principal.role != "patient"
+    enriched = []
+    for r in rows:
+        outcome = outcomes.get(str(r["id"])) or {}
+        enriched.append({
+            **r,
+            "analysis_type": canonical_analysis_type(r.get("analysis_type")),
+            "prediction": canonical_prediction(outcome.get("prediction")),
+            "confidence": outcome.get("confidence"),
+            "review_priority": (
+                review_priority(outcome.get("prediction"), outcome.get("confidence"))
+                if show_priority else None
+            ),
+        })
+    if prediction:
+        enriched = [r for r in enriched if (r["prediction"] or "").upper() == prediction.upper()]
+    if priority:
+        enriched = [r for r in enriched if r["review_priority"] == priority]
+
+    names = _display_names(db, hospital)
     if q:
-        # Substring search across id/modality/status/analysis_type, plus the
-        # patient's and doctor's display names — resolved from a cached
-        # per-hospital name lookup (same 30s TTL / write-invalidation as
-        # above), not exposed on the response, just used to power name-based
-        # search from the UI.
         term = q.strip().lower()
-        names = cached(
-            f"hospital:users:search:{hospital or 'ALL'}",
-            lambda: {u["id"]: (u.get("full_name") or "").lower() for u in db.list_user_profiles(hospital_id=hospital)},
-        )
 
         def _matches(row: dict) -> bool:
-            if any(term in str(row.get(f) or "").lower() for f in ("id", "modality", "status", "analysis_type")):
+            fields = ("id", "modality", "status", "analysis_type", "prediction")
+            if any(term in str(row.get(f) or "").lower() for f in fields):
                 return True
-            if term in names.get(str(row.get("patient_id")), ""):
-                return True
-            if term in names.get(str(row.get("doctor_id")), ""):
-                return True
-            return False
+            return any(
+                term in names.get(str(row.get(f)), "").lower()
+                for f in ("patient_id", "doctor_id")
+            )
 
-        visible = [r for r in visible if _matches(r)]
-    visible.sort(key=lambda r: str(r.get("created_at") or ""), reverse=True)
-    total = len(visible)
-    page = visible[offset : offset + limit]
+        enriched = [r for r in enriched if _matches(r)]
+    return enriched, names
+
+
+@router.get("", response_model=PaginatedResponse[SessionListItem])
+def list_analyses(
+    modality: str | None = Query(default=None),
+    status_filter: str | None = Query(default=None, alias="status"),
+    patient_id: str | None = Query(default=None),
+    doctor_id: str | None = Query(default=None),
+    radiologist_id: str | None = Query(default=None),
+    hospital_id: str | None = Query(default=None),
+    mine: bool = Query(default=False),
+    analysis_type: str | None = Query(default=None),
+    prediction: str | None = Query(default=None, description="CN | MCI | AD"),
+    priority: str | None = Query(default=None, description="routine | priority | urgent"),
+    q: str | None = Query(default=None),
+    date_from: str | None = Query(default=None, description="YYYY-MM-DD, inclusive"),
+    date_to: str | None = Query(default=None, description="YYYY-MM-DD, inclusive"),
+    sort: str = Query(default="newest", description="newest | oldest | patient_asc | patient_desc | confidence_desc"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    principal: Principal = Depends(get_current_user),
+    db: DatabaseService = Depends(get_database),
+) -> PaginatedResponse[SessionListItem]:
+    """Role-scoped list of analysis sessions the caller may see (doc 8.5)."""
+    rows, names = _enriched_sessions(
+        principal, db,
+        modality=modality, status_filter=status_filter, patient_id=patient_id,
+        doctor_id=doctor_id, radiologist_id=radiologist_id, hospital_id=hospital_id,
+        mine=mine, analysis_type=analysis_type, prediction=prediction,
+        priority=priority, q=q, date_from=date_from, date_to=date_to,
+    )
+    sort = sort if sort in _SORTS else "newest"
+    if sort in ("newest", "oldest"):
+        rows.sort(key=lambda r: str(r.get("created_at") or ""), reverse=sort == "newest")
+    elif sort == "confidence_desc":
+        rows.sort(key=lambda r: r.get("confidence") or -1.0, reverse=True)
+    else:
+        rows.sort(key=lambda r: str(r.get("created_at") or ""), reverse=True)
+        rows.sort(
+            key=lambda r: names.get(str(r.get("patient_id")), "").lower(),
+            reverse=sort == "patient_desc",
+        )
+    total = len(rows)
+    page = rows[offset : offset + limit]
     return PaginatedResponse(
-        items=[_to_status(r) for r in page], total=total, limit=limit, offset=offset
+        items=[_to_list_item(r, names) for r in page], total=total, limit=limit, offset=offset
+    )
+
+
+@router.get("/stats", response_model=AnalysisStatsResponse)
+def analysis_stats(
+    range_: str = Query(default="all", alias="range", description="today | week | month | quarter | all"),
+    trend: str = Query(default="8w", description="8w | 12w | 6m | 12m"),
+    modality: str | None = Query(default=None),
+    analysis_type: str | None = Query(default=None),
+    doctor_id: str | None = Query(default=None),
+    radiologist_id: str | None = Query(default=None),
+    hospital_id: str | None = Query(default=None),
+    mine: bool = Query(default=False),
+    principal: Principal = Depends(get_current_user),
+    db: DatabaseService = Depends(get_database),
+) -> AnalysisStatsResponse:
+    """Counts by status/modality/prediction/priority for a preset range, plus a
+    diagnosis-and-modality trend series, over the sessions the caller may read."""
+    from datetime import date, timedelta
+
+    from app.services.triage import TIERS
+
+    range_ = range_ if range_ in _STATS_RANGES else "all"
+    grain, count = _TREND_SPANS.get(trend, _TREND_SPANS["8w"])
+    rows, _ = _enriched_sessions(
+        principal, db,
+        modality=modality, analysis_type=analysis_type, doctor_id=doctor_id,
+        radiologist_id=radiologist_id, hospital_id=hospital_id, mine=mine,
+    )
+
+    today = date.today()
+    days_back = _STATS_RANGES[range_]
+    if days_back is not None:
+        start = (today - timedelta(days=days_back)).isoformat()
+        in_range = [r for r in rows if str(r.get("created_at") or "")[:10] >= start]
+    else:
+        in_range = rows
+
+    def _count(key: str, keys: tuple[str, ...] = ()) -> dict[str, int]:
+        out = {k: 0 for k in keys}
+        for r in in_range:
+            v = r.get(key)
+            if v:
+                out[v] = out.get(v, 0) + 1
+        return out
+
+    completed = [r for r in in_range if r.get("status") == SessionStatus.completed.value]
+    by_prediction = {"CN": 0, "MCI": 0, "AD": 0}
+    by_priority = {t: 0 for t in TIERS}
+    for r in completed:
+        if r.get("prediction"):
+            by_prediction[r["prediction"]] = by_prediction.get(r["prediction"], 0) + 1
+        if r.get("review_priority"):
+            by_priority[r["review_priority"]] += 1
+
+    # Trend buckets: calendar weeks (Mon-Sun) or calendar months, oldest first.
+    buckets: list[TrendBucket] = []
+    if grain == "week":
+        week_start = today - timedelta(days=today.weekday())
+        for i in range(count - 1, -1, -1):
+            s = week_start - timedelta(weeks=i)
+            e = s + timedelta(days=6)
+            label = f"{s.day} {s.strftime('%b')}"
+            buckets.append(TrendBucket(label=label, start=s.isoformat(), end=e.isoformat()))
+    else:
+        y, m = today.year, today.month
+        months = []
+        for _ in range(count):
+            months.append((y, m))
+            y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+        for y, m in reversed(months):
+            s = date(y, m, 1)
+            e = (date(y + (m == 12), 1 if m == 12 else m + 1, 1) - timedelta(days=1))
+            buckets.append(TrendBucket(label=s.strftime("%b %Y"), start=s.isoformat(), end=e.isoformat()))
+
+    for r in rows:
+        day = str(r.get("created_at") or "")[:10]
+        if not day:
+            continue
+        for b in buckets:
+            if b.start <= day <= b.end:
+                b.total += 1
+                mod = r.get("modality")
+                if mod:
+                    b.by_modality[mod] = b.by_modality.get(mod, 0) + 1
+                pred = r.get("prediction")
+                if pred and r.get("status") == SessionStatus.completed.value:
+                    b.by_prediction[pred] = b.by_prediction.get(pred, 0) + 1
+                break
+
+    return AnalysisStatsResponse(
+        range=range_,
+        total=len(in_range),
+        by_status=_count("status"),
+        by_modality=_count("modality", ("mri", "eeg")),
+        by_prediction=by_prediction,
+        by_priority=by_priority,
+        by_analysis_type=_count("analysis_type"),
+        trend_grain=grain,
+        trend=buckets,
     )
 
 
@@ -562,6 +726,19 @@ def _to_status(session: dict) -> SessionStatusResponse:
         error_message=session.get("error_message"),
         created_at=session.get("created_at"),
         updated_at=session.get("updated_at"),
+    )
+
+
+def _to_list_item(row: dict, names: dict[str, str]) -> SessionListItem:
+    base = _to_status(row).model_dump()
+    return SessionListItem(
+        **base,
+        radiologist_id=str(row["radiologist_id"]) if row.get("radiologist_id") else None,
+        patient_name=names.get(str(row.get("patient_id"))) or None,
+        doctor_name=names.get(str(row.get("doctor_id"))) or None,
+        prediction=row.get("prediction"),
+        confidence=row.get("confidence"),
+        review_priority=row.get("review_priority"),
     )
 
 

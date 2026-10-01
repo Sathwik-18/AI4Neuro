@@ -99,8 +99,8 @@ function AnalyticsPage() {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorScansIndigo" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#806257" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#806257" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -119,7 +119,7 @@ function AnalyticsPage() {
                 dx={-8}
               />
               <Tooltip
-                cursor={{ stroke: '#4f46e5', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: '#806257', strokeWidth: 1, strokeDasharray: '3 3' }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
@@ -138,7 +138,7 @@ function AnalyticsPage() {
               <Area
                 type="monotone"
                 dataKey="scans"
-                stroke="#4f46e5"
+                stroke="#806257"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorScansIndigo)"

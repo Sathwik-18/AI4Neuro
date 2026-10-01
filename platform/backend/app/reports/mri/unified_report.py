@@ -665,7 +665,7 @@ def _add_vote_distribution_bars(pdf: UnifiedPDFReport, vote_distribution: Dict, 
     bar_h = 7
     gap = 3.5
 
-    for cls in ['AD', 'CN', 'MCI']:
+    for cls in vote_distribution or ['AD', 'CN', 'MCI']:
         entry = vote_distribution.get(cls) or {}
         pct = float(entry.get('percentage', 0) or 0)
         count = entry.get('count', 0)

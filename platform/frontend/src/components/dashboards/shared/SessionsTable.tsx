@@ -30,7 +30,11 @@ export function SessionsTable({
   onSessionDeleted,
   showDeleteAction = true,
   onViewReport,
+  preferredReport = 'clinician',
 }: {
+  /** Which PDF "View Report" opens first: clinicians get the clinical report,
+   * patients the plain-language one. */
+  preferredReport?: 'clinician' | 'patient';
   sessions: SessionStatusResponse[];
   accent: Accent;
   /** Maps `patient_id` -> display name; omit to show a placeholder instead. */
@@ -59,7 +63,10 @@ export function SessionsTable({
     setLoadingReportId(sessionId);
     try {
       const { report_urls } = await analysisApi.reports(sessionId);
-      const url = report_urls.patient ?? report_urls.clinician ?? report_urls.technical ?? null;
+      const url =
+        preferredReport === 'patient'
+          ? report_urls.patient ?? report_urls.clinician ?? report_urls.technical ?? null
+          : report_urls.clinician ?? report_urls.technical ?? report_urls.patient ?? null;
       if (url && win) {
         win.location.href = url;
       } else {

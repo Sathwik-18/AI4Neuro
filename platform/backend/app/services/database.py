@@ -268,7 +268,22 @@ class DatabaseService:
             "model_version": result.model_version,
         }
         res = self.client.table(RESULTS_TABLE).insert(row).execute()
+        invalidate_prefix("results:")
         return _one(res) or {}
+
+    def results_summary(self) -> dict[str, dict]:
+        """session_id -> {prediction, confidence} for every result (cached 30s,
+        invalidated on insert). Lets list/stats views show outcomes without a
+        per-row query."""
+        return cached("results:summary", self._fetch_results_summary)
+
+    def _fetch_results_summary(self) -> dict[str, dict]:
+        res = self.client.table(RESULTS_TABLE).select("session_id,prediction,confidence").execute()
+        return {
+            str(r["session_id"]): {"prediction": r.get("prediction"), "confidence": r.get("confidence")}
+            for r in (getattr(res, "data", None) or [])
+            if r.get("session_id")
+        }
 
     def get_result(self, session_id: str) -> dict | None:
         res = (

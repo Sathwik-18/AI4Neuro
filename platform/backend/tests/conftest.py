@@ -89,7 +89,14 @@ def client(
     storage_service: StorageService,
     fake_auth_admin: FakeAuthAdminService,
 ) -> TestClient:
+    from app.api.v1.analysis import limiter as analysis_limiter
+    from app.core.cache import invalidate_prefix
     from app.pipelines.base import register_pipeline, stub_runner_factory
+
+    # Module-level state outlives the per-test app: without resetting it,
+    # upload rate limits and cached profiles leak between tests.
+    analysis_limiter.reset()
+    invalidate_prefix("")
 
     app = create_app()
     app.dependency_overrides[get_database] = lambda: db_service

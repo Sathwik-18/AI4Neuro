@@ -20,16 +20,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # ---- Derived default paths -------------------------------------------------- #
 # config.py lives at platform/backend/app/core/config.py.
 _APP_DIR = Path(__file__).resolve().parents[1]          # .../platform/backend/app
-_REPO_ROOT = Path(__file__).resolve().parents[4]        # repo root (AI4Neuro)
+_BACKEND_DIR = _APP_DIR.parent                          # .../platform/backend
+_MODELS_DIR = _BACKEND_DIR / "models"
 
-# EEG code was copied into the pipeline package; large binaries (checkpoints,
-# reference .npy) stay in the legacy tree during migration and are referenced via
-# these overridable defaults (bundled into the EEG worker image at deployment).
 _DEFAULT_EEG_SIDDHI_DIR = _APP_DIR / "pipelines" / "eeg" / "siddhi"
-_DEFAULT_EEG_CHECKPOINT_ROOT = (
-    _REPO_ROOT / "Alzheimer-Detection" / "backend" / "SIDDHI" / "checkpoints"
-)
-_DEFAULT_EEG_REFERENCE_DIR = _REPO_ROOT / "Alzheimer-Detection" / "backend"
+_DEFAULT_EEG_CHECKPOINT_ROOT = _MODELS_DIR / "eeg" / "checkpoints"
+# Holds representative/{cn,mci,ad} repr.npy.
+_DEFAULT_EEG_REFERENCE_DIR = _BACKEND_DIR
+_DEFAULT_CONVIT_CHECKPOINT = _MODELS_DIR / "mri" / "ConVit_checkpoint.pth"
 
 
 class Settings(BaseSettings):
@@ -116,7 +114,12 @@ class Settings(BaseSettings):
     # previous behavior. A real ConViT checkpoint is required either way;
     # without one, MRI analysis jobs fail explicitly instead of returning
     # mock predictions.
-    convit_checkpoint_path: str = Field(default="", alias="CONVIT_CHECKPOINT_PATH")
+    convit_checkpoint_path: str = Field(
+        default=str(_DEFAULT_CONVIT_CHECKPOINT), alias="CONVIT_CHECKPOINT_PATH"
+    )
+    # Optional dedicated CN-vs-AD checkpoint. When empty, binary MRI requests
+    # are served from the multiclass checkpoint (CN vs AD renormalised).
+    mri_binary_checkpoint_path: str = Field(default="", alias="MRI_BINARY_CHECKPOINT_PATH")
     use_cat12_preprocessing: bool = Field(default=False, alias="USE_CAT12_PREPROCESSING")
     cat12_root: str = Field(default="", alias="CAT12_ROOT")
     cat12_exe: str = Field(default="", alias="CAT12_EXE")

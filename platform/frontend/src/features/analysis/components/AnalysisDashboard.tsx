@@ -24,11 +24,10 @@ import {
   StatCard,
   QuickActionsList,
   DashboardPageHeader,
-  MiniBarChart,
-  DonutStat,
-  DonutLegend,
 } from '@/components/dashboards/shared/primitives';
 import { SessionsTable } from '@/components/dashboards/shared/SessionsTable';
+import { DashboardAnalytics } from '@/features/analytics/AnalyticsView';
+import { reportsPathFor } from '@/features/analytics/shared';
 import { ActivityCalendar } from '@/components/dashboards/shared/ActivityCalendar';
 import { PatientReportModal, type PatientReportData } from '@/components/shared/PatientReportModal';
 import { toast } from 'sonner';
@@ -60,12 +59,6 @@ const ROLE_COPY: Record<Role, { eyebrow: string; title: string; description: str
     description: 'View completed analysis reports shared by your care team.',
   },
 };
-
-function dayKey(iso: string | null): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 /**
  * Role dashboard body backed by the unified backend analysis API. Shares the
@@ -179,29 +172,6 @@ export function AnalysisDashboard() {
     return { total, inProgress, completed, failed, mri, eeg, completedThisWeek };
   }, [sessions]);
 
-  // Activity over the last 7 calendar days.
-  const activityData = useMemo(() => {
-    const buckets: { name: string; value: number }[] = [];
-    const counts = new Map<string, number>();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = `${d.getMonth() + 1}/${d.getDate()}`;
-      counts.set(key, 0);
-      buckets.push({ name: key, value: 0 });
-    }
-    (sessions ?? []).forEach((s) => {
-      const key = dayKey(s.created_at);
-      if (counts.has(key)) counts.set(key, (counts.get(key) || 0) + 1);
-    });
-    return buckets.map((b) => ({ name: b.name, value: counts.get(b.name) || 0 }));
-  }, [sessions]);
-
-  const modalitySegments = [
-    { name: 'MRI', value: stats.mri, color: '#0d9488' },
-    { name: 'EEG', value: stats.eeg, color: '#2563eb' },
-  ].filter((s) => s.value > 0);
-
   const recent = useMemo(
     () =>
       [...(sessions ?? [])]
@@ -282,44 +252,21 @@ export function AnalysisDashboard() {
         />
       </div>
 
-      {/* Analytics row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SectionCard className="p-5 lg:col-span-1">
-          <h3 className="text-sm font-semibold text-slate-900 mb-1">Analysis Activity</h3>
-          <p className="text-xs text-slate-500 mb-3">Last 7 days</p>
-          <MiniBarChart data={activityData} color={meta.accent === 'green' ? '#059669' : meta.accent === 'blue' ? '#2563eb' : meta.accent === 'teal' ? '#0d9488' : '#4f46e5'} isLoading={loading} />
-        </SectionCard>
+      <QuickActionsList
+        accent={meta.accent}
+        actions={
+          canCreate
+            ? [
+                { label: 'New MRI Analysis', href: '/analysis/new?modality=mri' },
+                { label: 'New EEG Analysis', href: '/analysis/new?modality=eeg' },
+                { label: 'View All Analyses', href: allAnalysesHref },
+                { label: 'Open Report Library', href: reportsPathFor(role) },
+              ]
+            : [{ label: 'View My Reports', href: reportsPathFor(role) }]
+        }
+      />
 
-        <SectionCard className="p-5">
-          <h3 className="text-sm font-semibold text-slate-900 mb-1">Modality Split</h3>
-          <p className="text-xs text-slate-500 mb-3">MRI vs EEG</p>
-          {loading ? (
-            <DonutStat centerLabel="AI" segments={[]} isLoading />
-          ) : modalitySegments.length > 0 ? (
-            <>
-              <DonutStat centerLabel="AI" segments={modalitySegments} />
-              <DonutLegend segments={modalitySegments.map((s) => ({ ...s, value: s.value }))} />
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-[180px] text-sm text-slate-400">
-              No analyses yet
-            </div>
-          )}
-        </SectionCard>
-
-        <QuickActionsList
-          accent={meta.accent}
-          actions={
-            canCreate
-              ? [
-                  { label: 'New MRI Analysis', href: '/analysis/new?modality=mri' },
-                  { label: 'New EEG Analysis', href: '/analysis/new?modality=eeg' },
-                  { label: 'View All Analyses', href: allAnalysesHref },
-                ]
-              : [{ label: 'View My Reports', href: '/patient/dashboard' }]
-          }
-        />
-      </div>
+      <DashboardAnalytics role={role} />
 
       {/* Recent analyses */}
       <SectionCard className="p-5">

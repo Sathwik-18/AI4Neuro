@@ -506,7 +506,7 @@ export function DashboardPageHeader({
           {eyebrow}
         </span>
       )}
-      <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mt-0.5">{title}</h1>
+      <h1 className="font-display text-3xl font-normal text-slate-900 tracking-tight mt-0.5">{title}</h1>
       <p className="text-sm text-slate-500 mt-1 max-w-xl">{description}</p>
     </div>
   );

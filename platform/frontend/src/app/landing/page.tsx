@@ -382,7 +382,7 @@ function ProcessSection() {
         <div className="eyebrow">Workflow</div>
         <h2>
           <GradientText
-            colors={['#073b65', '#0f8ea7', '#64f579']}
+            colors={['#31241F', '#806257', '#C7A79B']}
             animationSpeed={8}
             showBorder={false}
             className="process-gradient-heading text-4xl font-bold"
@@ -605,7 +605,7 @@ function AboutSection() {
         <div className="eyebrow">About AI4NEURO</div>
         <h2 className="text-3xl font-bold">
           <GradientText
-            colors={['#021f3d', '#064f8f', '#0b6fb3']}
+            colors={['#130601', '#58433B', '#806257']}
             animationSpeed={8}
             showBorder={false}
             className="about-gradient-heading"

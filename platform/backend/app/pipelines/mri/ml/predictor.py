@@ -16,6 +16,10 @@ logger = logging.getLogger(__name__)
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+# What the original ConViT checkpoint was trained with (output index order).
+DEFAULT_ARCH = 'convit_base.fb_in1k'
+DEFAULT_CLASS_NAMES = ('AD', 'CN', 'MCI')
+
 
 class MRIPredictor:
     """
@@ -47,7 +51,8 @@ class MRIPredictor:
         self.checkpoint_path = checkpoint_path
         self.model = None
         self.transform = None
-        self.class_names = ['AD', 'CN', 'MCI']
+        self.class_names = list(DEFAULT_CLASS_NAMES)
+        self.arch = DEFAULT_ARCH
         self.device = None
         self._initialized = False
 
@@ -61,9 +66,14 @@ class MRIPredictor:
             import timm
             from torchvision import transforms
 
-            self.device = torch.device(device) if device else torch.device(
-                "cuda" if torch.cuda.is_available() else "cpu"
-            )
+            if device:
+                self.device = torch.device(device)
+            elif torch.cuda.is_available():
+                self.device = torch.device("cuda")
+            elif torch.backends.mps.is_available():
+                self.device = torch.device("mps")
+            else:
+                self.device = torch.device("cpu")
 
             logger.info(f"Initializing MRIPredictor on {self.device}")
 
@@ -71,13 +81,6 @@ class MRIPredictor:
                 logger.warning(f"Checkpoint not found: {self.checkpoint_path}")
                 return
 
-            # Load the ConViT model
-            model_start = time.perf_counter()
-            logger.info("Creating ConViT architecture: convit_base.fb_in1k")
-            self.model = timm.create_model('convit_base.fb_in1k', pretrained=False, num_classes=3)
-            logger.info("ConViT architecture created in %.2fs", time.perf_counter() - model_start)
-
-            # Load checkpoint weights
             load_start = time.perf_counter()
             checkpoint_size_mb = os.path.getsize(self.checkpoint_path) / (1024 * 1024)
             logger.info(
@@ -85,8 +88,22 @@ class MRIPredictor:
                 checkpoint_size_mb,
                 self.checkpoint_path,
             )
-            checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
+            # The checkpoint also pickles optimizer/scheduler state, which
+            # torch>=2.6's weights_only default refuses to load.
+            checkpoint = torch.load(self.checkpoint_path, map_location="cpu", weights_only=False)
             logger.info("MRI checkpoint deserialized in %.2fs", time.perf_counter() - load_start)
+
+            # Replacement checkpoints can describe themselves with `arch` (a timm
+            # model name) and `class_names`; the original ConViT checkpoint has
+            # neither, so it falls back to the defaults it was trained with.
+            arch = checkpoint.get('arch') or DEFAULT_ARCH
+            self.class_names = list(checkpoint.get('class_names') or DEFAULT_CLASS_NAMES)
+            self.arch = arch
+
+            model_start = time.perf_counter()
+            logger.info("Creating architecture %s with classes %s", arch, self.class_names)
+            self.model = timm.create_model(arch, pretrained=False, num_classes=len(self.class_names))
+            logger.info("Architecture created in %.2fs", time.perf_counter() - model_start)
 
             state_start = time.perf_counter()
             self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -254,35 +271,17 @@ class MRIPredictor:
         return result
 
 
-# Global predictor instance (initialized lazily)
-_predictor: Optional[MRIPredictor] = None
-_predictor_checkpoint_path: Optional[str] = None
+# One lazily-created predictor per checkpoint (binary and multiclass may differ).
+_predictors: Dict[str, MRIPredictor] = {}
 
 
 def create_predictor(checkpoint_path: str = None) -> MRIPredictor:
-    """
-    Create or get the global predictor instance.
-
-    Args:
-        checkpoint_path: Path to model checkpoint
-
-    Returns:
-        MRIPredictor instance
-    """
-    global _predictor, _predictor_checkpoint_path
-
+    """Return the cached predictor for ``checkpoint_path`` (multiclass default)."""
     if checkpoint_path is None:
-        # Default checkpoint path
-        checkpoint_path = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            'checkpoints',
-            'ConViT_model.pth'
-        )
+        from app.core.config import get_settings
+        checkpoint_path = get_settings().convit_checkpoint_path
 
     checkpoint_path = os.path.abspath(checkpoint_path)
-
-    if _predictor is None or _predictor_checkpoint_path != checkpoint_path:
-        _predictor = MRIPredictor(checkpoint_path)
-        _predictor_checkpoint_path = checkpoint_path
-
-    return _predictor
+    if checkpoint_path not in _predictors:
+        _predictors[checkpoint_path] = MRIPredictor(checkpoint_path)
+    return _predictors[checkpoint_path]

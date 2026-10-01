@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api/client';
 
 // ============================================================================
 // GRADIENT TEXT - Subtle accent text
@@ -181,28 +182,22 @@ export function SystemStatus({
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const response = await fetch(`${backendUrl}/api/health`, {
+        const response = await fetch(`${API_BASE}/api/v1/health`, {
           signal: controller.signal,
         });
         clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
-          if (data.status === 'healthy') {
-            setStatus('online');
-          } else {
-            setStatus('degraded');
-          }
+          setStatus(data.status === 'ok' ? 'online' : 'degraded');
         } else {
           setStatus('degraded');
         }
-      } catch (error) {
-        // Check if we at least have frontend working
-        setStatus('online'); // Frontend is working, backend may not be needed
+      } catch {
+        setStatus('offline');
       }
     };
 

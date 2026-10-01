@@ -56,8 +56,8 @@ def run_mri_pipeline(context: AnalysisContext) -> PipelineResult:
     scan_path = context.local_input_path
     work_dir = os.path.dirname(os.path.abspath(scan_path))
 
-    # --- 1) Model inference (multiclass-only; raises below if the model can't run) ---
-    ml = ml_runner.run_model(scan_path, "multiclass")
+    # --- 1) Model inference (raises below if the model can't run) ---
+    ml = ml_runner.run_model(scan_path, context.analysis_type)
     if ml.get("prediction") == "Error":
         raise RuntimeError(ml.get("error_details", "MRI model returned an error."))
 
@@ -76,6 +76,7 @@ def run_mri_pipeline(context: AnalysisContext) -> PipelineResult:
     metrics: dict = {k: ml.get(k) for k in _VOLUME_KEYS}
     metrics["volume_comparison"] = ml_runner.get_volume_comparison(ml)
     metrics["used_cat12"] = ml.get("used_cat12")
+    metrics["binary_derived"] = bool(ml.get("binary_derived"))
     metrics["processing_time_ms"] = ml.get("processing_time")
     for opt in ("scan_quality", "motion_artifacts"):
         if opt in ml:

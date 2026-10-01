@@ -46,7 +46,7 @@ does not need to touch EEG or frontend code.
 
 Owner responsibilities:
 
-1. Pick the target host: preferably Oracle Linux/Ubuntu VM.
+1. Pick the target host (macOS, Linux, or Windows).
 2. Install CAT12 Standalone for the correct OS/architecture.
 3. Install MATLAB Runtime R2023b/v232.
 4. Set `CAT12_ROOT`, `CAT12_EXE`, `MCR_ROOT`, and `CAT12_OUTPUT_DIR`.
@@ -64,7 +64,7 @@ Acceptance criteria:
 
 Non-goals for the CAT12 owner:
 
-- They do not need to deploy checkpoints. Use `CHECKPOINT_DEPLOYMENT.md`.
+- They do not need to manage checkpoints (they live in `platform/backend/models/`).
 - They do not need to change Supabase schema.
 - They do not need to modify frontend flow unless a CAT12-specific status label
   is later requested.
@@ -74,22 +74,23 @@ Non-goals for the CAT12 owner:
 Default teammate mode:
 
 ```env
-USE_MOCK_MODEL=false
 USE_CAT12_PREPROCESSING=false
-CONVIT_CHECKPOINT_PATH=/absolute/path/to/platform/backend/models/mri/ConVit_checkpoint.pth
+# CONVIT_CHECKPOINT_PATH defaults to platform/backend/models/mri/ConVit_checkpoint.pth
 ```
 
-CAT12-enabled mode:
+CAT12-enabled mode (macOS example):
 
 ```env
-USE_MOCK_MODEL=false
 USE_CAT12_PREPROCESSING=true
-CONVIT_CHECKPOINT_PATH=/absolute/path/to/platform/backend/models/mri/ConVit_checkpoint.pth
-CAT12_ROOT=/absolute/path/to/cat12-or-standalone
-CAT12_EXE=/absolute/path/to/cat12/spm25
-MCR_ROOT=/absolute/path/to/MATLAB/MATLAB_Runtime/R2023b
+CAT12_ROOT=/Users/<you>/CAT12/CAT12.9_R2023b_MCR_Mac
+CAT12_EXE=/Users/<you>/CAT12/CAT12.9_R2023b_MCR_Mac/run_spm25.sh
+MCR_ROOT=/Applications/MATLAB/MATLAB_Runtime/v232
 CAT12_OUTPUT_DIR=/tmp/neuro-platform/cat12
+LOCAL_JOB_MAX_WORKERS=1
 ```
+
+On first run macOS Gatekeeper may block the binaries; clear it with
+`xattr -dr com.apple.quarantine /Users/<you>/CAT12`.
 
 Windows native example:
 
@@ -103,21 +104,6 @@ CAT12_OUTPUT_DIR=C:\tmp\neuro-platform\cat12
 For Windows teammates, prefer WSL2 for normal backend/frontend development.
 Use native Windows only if specifically testing the Windows CAT12 standalone.
 
-## Deployment Env On Oracle VM
-
-Recommended production/staging layout:
-
-```env
-USE_MOCK_MODEL=false
-USE_CAT12_PREPROCESSING=true
-CONVIT_CHECKPOINT_PATH=/opt/ai4neuro/models/mri/ConVit_checkpoint.pth
-CAT12_ROOT=/opt/cat12
-CAT12_EXE=/opt/cat12/spm25
-MCR_ROOT=/opt/MATLAB/MATLAB_Runtime/R2023b
-CAT12_OUTPUT_DIR=/tmp/neuro-platform/cat12
-LOCAL_JOB_MAX_WORKERS=1
-```
-
 Use `LOCAL_JOB_MAX_WORKERS=1` while CAT12 is enabled. CAT12 can be CPU/RAM
 heavy and may take several minutes per scan.
 
@@ -127,15 +113,8 @@ Use the CAT12 official download links for the matching OS and architecture.
 CAT12 Standalone does not need a MATLAB license, but it does need the free
 MATLAB Runtime R2023b/v232.
 
-Linux VM shape:
-
-- Ubuntu 22.04/24.04
-- At least 4 OCPU if possible
-- At least 16 GB RAM for comfortable MRI preprocessing
-- 50-100 GB disk for runtime, temp files, checkpoints, and logs
-
-Keep model checkpoints in object storage, then sync them onto the VM. Do not put
-large `.pth` checkpoint files in GitHub.
+Plan for at least 16 GB RAM for comfortable MRI preprocessing. Do not put large
+`.pth` checkpoint files in GitHub.
 
 ## Validate Setup
 

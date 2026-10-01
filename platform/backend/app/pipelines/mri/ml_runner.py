@@ -5,7 +5,9 @@ ML Runner - Implements the MRI Pipeline:
 1. Slice Extraction -> 10 axial slices (from mwp1 when CAT12 ran, else raw)
 2. Model Inference -> ConViT per-slice prediction, majority vote
 
-Multiclass-only (CN/MCI/AD): the ConViT checkpoint is trained multiclass-only.
+Serves multiclass (CN/MCI/AD) and binary (CN/AD). Binary uses
+MRI_BINARY_CHECKPOINT_PATH when set; otherwise it reuses the multiclass
+checkpoint and renormalises CN vs AD, flagged as ``binary_derived``.
 If the model can't run for any reason, this returns an explicit error instead
 of a fabricated prediction. Same for CAT12 when enabled: preprocessing failure
 is a hard pipeline error, never a silent fallback to unprocessed input.
@@ -17,7 +19,10 @@ import os
 from typing import Dict, Any
 
 from app.pipelines.mri.config import (
+    ANALYSIS_TYPES,
     CONVIT_CHECKPOINT_PATH,
+    MODEL_VERSION,
+    MRI_BINARY_CHECKPOINT_PATH,
     NORMATIVE_VOLUMES,
     USE_CAT12_PREPROCESSING,
 )
@@ -30,6 +35,12 @@ logger = logging.getLogger(__name__)
 
 def run_model(scan_path: str, analysis_type: str = 'multiclass') -> Dict[str, Any]:
     start_time = time.time()
+    analysis_type = analysis_type if analysis_type in ANALYSIS_TYPES else 'multiclass'
+    checkpoint_path = (
+        MRI_BINARY_CHECKPOINT_PATH
+        if analysis_type == 'binary' and MRI_BINARY_CHECKPOINT_PATH
+        else CONVIT_CHECKPOINT_PATH
+    )
     processed_path = scan_path
     cat12_volumes: Dict[str, float] | None = None
     mwp1_path: str | None = None
@@ -96,14 +107,14 @@ def run_model(scan_path: str, analysis_type: str = 'multiclass') -> Dict[str, An
     try:
         from app.pipelines.mri.ml.predictor import create_predictor
 
-        if not CONVIT_CHECKPOINT_PATH or not os.path.exists(CONVIT_CHECKPOINT_PATH):
-            logger.error(f"Model checkpoint not found: {CONVIT_CHECKPOINT_PATH!r}")
+        if not checkpoint_path or not os.path.exists(checkpoint_path):
+            logger.error(f"Model checkpoint not found: {checkpoint_path!r}")
             return _error_response(
                 "MRI model checkpoint is not configured or could not be found. "
-                "Analysis cannot run without the trained ConViT checkpoint."
+                "Analysis cannot run without a trained MRI checkpoint."
             )
 
-        predictor = create_predictor(CONVIT_CHECKPOINT_PATH)
+        predictor = create_predictor(checkpoint_path)
 
         if not predictor.is_available():
             logger.error("Model failed to initialize.")
@@ -121,8 +132,11 @@ def run_model(scan_path: str, analysis_type: str = 'multiclass') -> Dict[str, An
         return _error_response(f"Model inference failed: {str(e)}")
 
     # --- Formatting Response ---
-    model_probs = _model_probabilities(prediction_result)
-    probabilities_by_class = _probabilities_for_analysis(model_probs)
+    model_probs = _model_probabilities(prediction_result, predictor.class_names)
+    try:
+        probabilities_by_class, binary_derived = _probabilities_for_analysis(model_probs, analysis_type)
+    except ValueError as e:
+        return _error_response(str(e))
     classes = list(probabilities_by_class.keys())
     predicted_label = max(probabilities_by_class, key=probabilities_by_class.get)
     confidence = probabilities_by_class[predicted_label]
@@ -146,11 +160,14 @@ def run_model(scan_path: str, analysis_type: str = 'multiclass') -> Dict[str, An
         'ventricular_volume': volumes['ventricles'],
         'tiv': volumes.get('tiv'),
         'processing_time': int((time.time() - start_time) * 1000),
-        'analysis_type': 'multiclass',
+        'analysis_type': analysis_type,
+        'binary_derived': binary_derived,
         'used_cat12': cat12_volumes is not None,
         'mwp1_path': mwp1_path,
         'mwp2_path': mwp2_path,
-        'model_version': 'ConViT-v1.0',
+        'model_version': (
+            f"{MODEL_VERSION} (CN vs AD from 3-class)" if binary_derived else MODEL_VERSION
+        ),
         'status': 'success'
     }
 
@@ -205,34 +222,50 @@ def get_volume_comparison(ml_results: Dict[str, Any]) -> Dict[str, Dict[str, Any
     return comparisons
 
 
-def _model_probabilities(prediction_result: Dict[str, Any]) -> Dict[str, float]:
-    """Return averaged ConViT class probabilities as fractions."""
+def _model_probabilities(prediction_result: Dict[str, Any], class_names) -> Dict[str, float]:
+    """Return the model's averaged slice probabilities as fractions summing to 1."""
+    class_names = list(class_names)
     raw = prediction_result.get('average_probabilities') or {}
     if not raw:
         diagnosis = prediction_result.get('patient_diagnosis')
         confidence = float(prediction_result.get('confidence', 0.0))
-        raw = {cls: 0.0 for cls in ['AD', 'CN', 'MCI']}
+        raw = {cls: 0.0 for cls in class_names}
         if diagnosis in raw:
             raw[diagnosis] = confidence
 
-    probs = {cls: max(float(raw.get(cls, 0.0)) / 100.0, 0.0) for cls in ['AD', 'CN', 'MCI']}
+    probs = {cls: max(float(raw.get(cls, 0.0)) / 100.0, 0.0) for cls in class_names}
     total = sum(probs.values())
     if total <= 0:
-        return {'AD': 1 / 3, 'CN': 1 / 3, 'MCI': 1 / 3}
+        return {cls: 1 / len(class_names) for cls in class_names}
     return {cls: value / total for cls, value in probs.items()}
 
 
-def _probabilities_for_analysis(model_probs: Dict[str, float]) -> Dict[str, float]:
-    """Return the 3-class ConViT probabilities (MRI is multiclass-only)."""
-    return {
-        'CN': float(model_probs.get('CN', 0.0)),
-        'MCI': float(model_probs.get('MCI', 0.0)),
-        'AD': float(model_probs.get('AD', 0.0)),
-    }
+def _probabilities_for_analysis(
+    model_probs: Dict[str, float], analysis_type: str
+) -> tuple[Dict[str, float], bool]:
+    """Map model output to the requested class set.
+
+    Returns (probabilities in ANALYSIS_TYPES order, binary_derived). Binary
+    from a 3-class model drops MCI and renormalises CN vs AD."""
+    wanted = ANALYSIS_TYPES[analysis_type]
+    missing = [cls for cls in wanted if cls not in model_probs]
+    if missing:
+        raise ValueError(
+            f"The configured MRI model cannot produce a {analysis_type} result "
+            f"(missing classes: {', '.join(missing)})."
+        )
+
+    derived = set(model_probs) != set(wanted)
+    subset = {cls: float(model_probs[cls]) for cls in wanted}
+    total = sum(subset.values())
+    if total <= 0:
+        return {cls: 1 / len(wanted) for cls in wanted}, derived
+    return {cls: p / total for cls, p in subset.items()}, derived
+
 
 def _error_response(msg):
     return {
-        'prediction': 'Error', 'confidence': 0.0, 'probabilities': [0, 0, 0],
+        'prediction': 'Error', 'confidence': 0.0, 'probabilities': [],
         'classes': ['Error'], 'brain_volume': 0, 'processing_time': 0, 'error_details': msg,
         'status': 'error',
     }

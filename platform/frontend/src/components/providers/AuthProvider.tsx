@@ -147,10 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fire all independent lookups in parallel
         const [roleResult, hospitalResult] = await Promise.all([
           table
-            ? supabase.from(table).select('*').eq('user_id', currentUser.id).maybeSingle().catch(() => ({ data: null }))
+            // Query builders are thenables without .catch; wrap in a real Promise.
+            ? Promise.resolve(supabase.from(table).select('*').eq('user_id', currentUser.id).maybeSingle()).catch(() => ({ data: null }))
             : Promise.resolve({ data: null }),
           profile.hospital_id
-            ? supabase.from('hospitals').select('name').eq('id', profile.hospital_id).maybeSingle().catch(() => ({ data: null }))
+            ? Promise.resolve(supabase.from('hospitals').select('name').eq('id', profile.hospital_id).maybeSingle()).catch(() => ({ data: null }))
             : Promise.resolve({ data: null }),
         ]);
 

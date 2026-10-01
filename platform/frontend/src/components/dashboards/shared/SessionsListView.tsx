@@ -362,6 +362,7 @@ export function SessionsListView({ role }: { role: SessionsRole }) {
               showDeleteAction={config.showDeleteAction}
               emptyLabel={config.emptyLabel}
               onSessionDeleted={handleSessionDeleted}
+              preferredReport={role === 'patient' ? 'patient' : 'clinician'}
             />
             <Pagination
               currentPage={page}

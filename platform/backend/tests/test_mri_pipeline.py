@@ -1,7 +1,7 @@
-"""MRI pipeline tests (multiclass-only, no mock fallback).
+"""MRI pipeline tests (binary + multiclass, no mock fallback).
 
-The pipeline is multiclass-only (CN/MCI/AD; no binary path) and has no mock
-fallback: without a real, loadable ConViT checkpoint, it must fail loudly
+The pipeline has no mock
+fallback: without a real, loadable MRI checkpoint, it must fail loudly
 (raise) instead of returning a fabricated prediction. Checkpoint-focused
 tests force USE_CAT12_PREPROCESSING off so they isolate that failure mode
 from CAT12 (which would otherwise fail first against these tests' synthetic
@@ -56,18 +56,66 @@ def test_no_checkpoint_fails_loudly(tmp_path, monkeypatch):
         run_mri_pipeline(ctx)
 
 
-def test_analysis_type_is_always_multiclass(tmp_path, monkeypatch):
-    """MRI has no binary path: any requested analysis_type is treated as multiclass."""
+def test_binary_without_any_checkpoint_fails_loudly(tmp_path, monkeypatch):
     from app.pipelines.mri import ml_runner
+    from app.pipelines.mri.runner import run_mri_pipeline
 
     monkeypatch.setattr(ml_runner, "CONVIT_CHECKPOINT_PATH", "")
+    monkeypatch.setattr(ml_runner, "MRI_BINARY_CHECKPOINT_PATH", "")
     monkeypatch.setattr(ml_runner, "USE_CAT12_PREPROCESSING", False)
 
     ctx = _make_context(tmp_path, "scan.nii.gz", "binary", "mri-binary-request")
-    # Even a "binary" request hits the same (checkpoint-required) multiclass-only path.
     with pytest.raises(RuntimeError, match="checkpoint"):
-        from app.pipelines.mri.runner import run_mri_pipeline
         run_mri_pipeline(ctx)
+
+
+def test_multiclass_probabilities_pass_through():
+    from app.pipelines.mri.ml_runner import _probabilities_for_analysis
+
+    probs, derived = _probabilities_for_analysis({"AD": 0.5, "CN": 0.2, "MCI": 0.3}, "multiclass")
+    assert list(probs) == ["CN", "MCI", "AD"]
+    assert probs == pytest.approx({"CN": 0.2, "MCI": 0.3, "AD": 0.5})
+    assert derived is False
+
+
+def test_binary_from_three_class_model_is_renormalised_and_flagged():
+    from app.pipelines.mri.ml_runner import _probabilities_for_analysis
+
+    probs, derived = _probabilities_for_analysis({"AD": 0.5, "CN": 0.2, "MCI": 0.3}, "binary")
+    assert list(probs) == ["CN", "AD"]
+    assert probs == pytest.approx({"CN": 0.2 / 0.7, "AD": 0.5 / 0.7})
+    assert derived is True
+
+
+def test_binary_from_dedicated_binary_model_is_not_derived():
+    from app.pipelines.mri.ml_runner import _probabilities_for_analysis
+
+    probs, derived = _probabilities_for_analysis({"CN": 0.9, "AD": 0.1}, "binary")
+    assert probs == pytest.approx({"CN": 0.9, "AD": 0.1})
+    assert derived is False
+
+
+def test_binary_model_cannot_serve_multiclass():
+    from app.pipelines.mri.ml_runner import _probabilities_for_analysis
+
+    with pytest.raises(ValueError, match="MCI"):
+        _probabilities_for_analysis({"CN": 0.9, "AD": 0.1}, "multiclass")
+
+
+def test_model_probabilities_follow_checkpoint_class_names():
+    from app.pipelines.mri.ml_runner import _model_probabilities
+
+    probs = _model_probabilities({"average_probabilities": {"CN": 75.0, "AD": 25.0}}, ["CN", "AD"])
+    assert probs == pytest.approx({"CN": 0.75, "AD": 0.25})
+
+
+def test_api_accepts_mri_binary_and_legacy_alias():
+    from app.api.v1.analysis import _normalize_analysis_type
+
+    assert _normalize_analysis_type("mri", "binary") == "binary"
+    assert _normalize_analysis_type("mri", "ad-only") == "binary"
+    assert _normalize_analysis_type("mri", "Multiclass") == "multiclass"
+    assert _normalize_analysis_type("eeg", "binary") == "multiclass"
 
 
 def test_viewer_slice_extraction_and_upload(tmp_path):

@@ -2,7 +2,7 @@
 #
 # Bundles the API + both ML pipelines and runs jobs in-process via the
 # ThreadPoolExecutor JobService. This is the simplest deployable unit; for
-# production, split into Dockerfile.api + worker images (see docs/deployment.md).
+# production, split into Dockerfile.api + worker images (see docs/archive/cloud-deployment/deployment.md).
 #
 # NOTE: this image is large (PyTorch + timm + nibabel). torch/torchvision are
 # installed from a CPU wheel index by default; override TORCH_INDEX_URL for GPU.
@@ -30,12 +30,11 @@ RUN pip install --no-cache-dir --index-url "${TORCH_INDEX_URL}" torch torchvisio
 COPY app ./app
 
 # Model weights + reference data are provided at runtime via a mounted /models
-# volume (they are intentionally NOT baked in — see docs/deployment.md).
+# volume (they are intentionally NOT baked in — see docs/archive/cloud-deployment/deployment.md).
 ENV EEG_CHECKPOINT_ROOT=/models/eeg/checkpoints \
-    EEG_REFERENCE_DIR=/models/eeg/reference \
-    CONVIT_CHECKPOINT_PATH=/models/mri/ConViT_model.pth \
+    EEG_REFERENCE_DIR=/refs \
+    CONVIT_CHECKPOINT_PATH=/models/mri/ConVit_checkpoint.pth \
     LOCAL_TMP_DIR=/tmp/neuro-platform \
-    USE_MOCK_MODEL=true \
     USE_CAT12_PREPROCESSING=false
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser /app

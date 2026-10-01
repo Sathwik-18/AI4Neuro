@@ -88,6 +88,40 @@ class SessionStatusResponse(BaseModel):
         return self.status in TERMINAL_STATUSES
 
 
+class SessionListItem(SessionStatusResponse):
+    """A list row: the session plus its outcome, triage tier, and display names."""
+
+    radiologist_id: str | None = None
+    patient_name: str | None = None
+    doctor_name: str | None = None
+    prediction: str | None = None
+    confidence: float | None = None
+    review_priority: str | None = None
+
+
+class TrendBucket(BaseModel):
+    label: str
+    start: str
+    end: str
+    total: int = 0
+    by_prediction: dict[str, int] = Field(default_factory=dict)
+    by_modality: dict[str, int] = Field(default_factory=dict)
+
+
+class AnalysisStatsResponse(BaseModel):
+    """Role-scoped aggregates for the analytics views."""
+
+    range: str
+    total: int
+    by_status: dict[str, int]
+    by_modality: dict[str, int]
+    by_prediction: dict[str, int]
+    by_priority: dict[str, int]
+    by_analysis_type: dict[str, int]
+    trend_grain: str
+    trend: list[TrendBucket]
+
+
 class ScanRow(BaseModel):
     """A single analysis session enriched with the display names the Super
     Admin "View Scans" table needs, so the frontend doesn't have to resolve

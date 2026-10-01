@@ -6,7 +6,7 @@ This document summarizes the current state of the migration from two separate ap
 (`Alzheimer-Detection/` for EEG, `mri-platform/` for MRI) into one unified product in
 `platform/`. It reflects what has actually been built and verified — not the original
 architecture plan in isolation. For deep technical detail see `platform/README.md`,
-`platform/docs/architecture.md`, `platform/docs/deployment.md`, and
+`platform/docs/architecture.md`, `platform/docs/archive/cloud-deployment/deployment.md`, and
 `platform/docs/SETUP_GUIDE.md`.
 
 ---

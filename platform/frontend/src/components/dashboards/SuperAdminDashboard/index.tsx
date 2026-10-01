@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import { DashboardAnalytics } from '@/features/analytics/AnalyticsView';
 import Link from 'next/link';
 import {
   AreaChart,
@@ -257,8 +258,8 @@ export const SuperAdminDashboard: React.FC = () => {
                     <AreaChart data={patientVisitsData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorVisitsIndigo" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.0} />
+                          <stop offset="5%" stopColor="#806257" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#806257" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -276,7 +277,7 @@ export const SuperAdminDashboard: React.FC = () => {
                         dx={-8}
                       />
                       <Tooltip
-                        cursor={{ stroke: '#4f46e5', strokeWidth: 1, strokeDasharray: '3 3' }}
+                        cursor={{ stroke: '#806257', strokeWidth: 1, strokeDasharray: '3 3' }}
                         content={({ active, payload, label }) => {
                           if (active && payload && payload.length) {
                             return (
@@ -295,7 +296,7 @@ export const SuperAdminDashboard: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="visits"
-                        stroke="#4f46e5"
+                        stroke="#806257"
                         strokeWidth={2}
                         fillOpacity={1}
                         fill="url(#colorVisitsIndigo)"
@@ -434,6 +435,10 @@ export const SuperAdminDashboard: React.FC = () => {
           hospitals={hospitals ?? []}
           accent="indigo"
         />
+
+        <FadeIn delay={0.06}>
+          <DashboardAnalytics role="super_admin" hospitalId={selectedHospitalId || undefined} />
+        </FadeIn>
 
         {/* Scans Calendar & Status Activity */}
         <FadeIn delay={0.08}>

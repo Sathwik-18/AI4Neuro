@@ -359,14 +359,14 @@ export function AnalysisUploadForm() {
       shortTitle: 'EEG',
       description: 'Upload .npy EEG recordings for ADFormer analysis.',
       icon: <Activity className="h-5 w-5" />,
-      checks: ['19-channel EEG support', 'Binary or multiclass AD analysis', 'PSD, similarity, and trial voting outputs'],
+      checks: ['19-channel EEG support', 'Multiclass CN/MCI/AD analysis', 'PSD, similarity, and trial voting outputs'],
     },
     mri: {
       title: 'MRI neuroimaging analysis',
       shortTitle: 'MRI',
       description: 'Upload NIfTI MRI scans for imaging-based classification.',
       icon: <Brain className="h-5 w-5" />,
-      checks: ['NIfTI scan support', 'CN/MCI/AD imaging workflow', 'Viewer slices, volume charts, and reports'],
+      checks: ['NIfTI scan support', 'Multiclass CN/MCI/AD or binary CN vs AD', 'Viewer slices, volume charts, and reports'],
     },
   } as const;
 

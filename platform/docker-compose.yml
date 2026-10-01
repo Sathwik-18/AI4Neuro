@@ -13,7 +13,7 @@
 #
 # The backend here is the all-in-one MVP image (API + both pipelines, jobs run
 # in-process). For production, split into an API image + worker images
-# (see docs/deployment.md).
+# (see docs/archive/cloud-deployment/deployment.md).
 
 services:
   backend:
@@ -29,7 +29,8 @@ services:
       - "8000:8000"
     volumes:
       # Model weights + reference data (not baked into the image).
-      - ./models:/models:ro
+      - ./backend/models:/models:ro
+      - ./backend/representative:/refs/representative:ro
       - neuro-tmp:/tmp/neuro-platform
     restart: unless-stopped
 

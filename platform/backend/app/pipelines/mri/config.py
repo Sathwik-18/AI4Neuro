@@ -9,8 +9,8 @@ modules port with only their import lines rewired:
   * **env-driven values** (ConViT checkpoint, CAT12/MATLAB paths) are sourced
     from the unified settings.
 
-The runtime pipeline (``ml_runner.py``) is multiclass-only (CN/MCI/AD) since
-the ConViT checkpoint is trained multiclass-only. When ``USE_CAT12_PREPROCESSING``
+The runtime pipeline (``ml_runner.py``) serves multiclass (CN/MCI/AD) and binary
+(CN/AD); see ``ml_runner.py`` for how binary is resolved. When ``USE_CAT12_PREPROCESSING``
 is true it runs CAT12 (via ``cat12_manager.py``) on the uploaded raw T1 NIfTI
 before inference; when false, the uploaded scan is treated as already
 preprocessed (previous behavior).
@@ -26,6 +26,7 @@ _settings = get_settings()
 
 # ---- Env-driven ----
 CONVIT_CHECKPOINT_PATH: str = _settings.convit_checkpoint_path
+MRI_BINARY_CHECKPOINT_PATH: str = _settings.mri_binary_checkpoint_path
 USE_CAT12_PREPROCESSING: bool = _settings.use_cat12_preprocessing
 CAT12_ROOT: str = _settings.cat12_root
 CAT12_EXE: str = _settings.cat12_exe
@@ -40,6 +41,7 @@ os.makedirs(CAT12_OUTPUT_DIR, exist_ok=True)
 # ---- Static clinical constants (verbatim from legacy config) ----
 PREDICTION_CLASSES = ["CN", "MCI", "AD"]
 ANALYSIS_TYPES = {
+    "binary": ["CN", "AD"],
     "multiclass": ["CN", "MCI", "AD"],
 }
 
