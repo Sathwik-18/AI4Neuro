@@ -12,7 +12,7 @@ import {
   Stethoscope,
   Users,
   Waves,
-} from 'lucide-react';
+} from '@/components/icons';
 import { RoleShell } from '@/components/dashboards/shared/RoleShell';
 import {
   DashboardPageHeader,

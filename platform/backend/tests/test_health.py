@@ -13,8 +13,9 @@ def test_health_ok():
 def test_health_database_not_configured(monkeypatch):
     from app.core.config import get_settings
 
-    # A developer's local .env may hold real Supabase keys; blank them here.
+    # A developer's local .env may hold a real Firebase project; blank it here.
     settings = get_settings()
+    monkeypatch.setattr(settings, "firebase_project_id", None)
     monkeypatch.setattr(settings, "supabase_url", None)
     monkeypatch.setattr(settings, "supabase_service_role_key", None)
     with TestClient(create_app()) as client:

@@ -15,7 +15,7 @@
  */
 
 import Image from 'next/image';
-import { Brain, Info, Sparkles } from 'lucide-react';
+import { Brain, Info, Sparkles } from '@/components/icons';
 import type { Explainability } from '../types';
 
 function Slide({ src, label, tone }: { src?: string | null; label: string; tone: 'affected' | 'reference' }) {

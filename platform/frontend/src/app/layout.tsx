@@ -5,9 +5,10 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { PageTransitionLoader } from "@/components/shared/PageTransition";
+import { PALETTE_INIT_SCRIPT } from "@/lib/appearance";
 import "./globals.css";
 
-// Variable font (no fixed weights): the landing VariableProximity effect animates `wght`.
+// Variable font (no fixed weights) so any weight renders without faux-bolding.
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
@@ -37,21 +38,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-        />
+        <script dangerouslySetInnerHTML={{ __html: PALETTE_INIT_SCRIPT }} />
       </head>
       <body
         className={`${dmSans.variable} ${anton.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          forcedTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
+        <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
               <PageTransitionLoader />

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
-import { FileText, Loader2, Waves, Brain, Trash2 } from 'lucide-react';
+import { FileText, Loader2, Waves, Brain, Trash2 } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { StatusBadge, ACCENT_STYLES, type Accent } from './primitives';
 import { analysisApi } from '@/features/analysis/api';

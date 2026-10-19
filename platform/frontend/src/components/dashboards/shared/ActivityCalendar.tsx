@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { ACCENT_STYLES, type Accent } from './primitives';
 

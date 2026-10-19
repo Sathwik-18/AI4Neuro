@@ -77,12 +77,14 @@ def main() -> int:
         return 2
 
     print(f"\nRunning CAT12 on {input_path}")
-    output_path = cat12_manager.run_cat12_preprocessing(str(input_path))
-    if not output_path or not Path(output_path).exists():
+    result = cat12_manager.run_cat12_preprocessing(str(input_path))
+    if result is None or not Path(result.mwp1_path).exists():
         print("CAT12 ran but no mwp1 output was produced.")
         return 1
 
-    print(f"CAT12 output ready: {output_path}")
+    print(f"CAT12 output ready: {result.mwp1_path}")
+    print(f"  volumes XML: {result.report_xml_path or 'missing'}")
+    print(f"  ROI XML:     {result.roi_xml_path or 'missing'}")
     return 0
 
 

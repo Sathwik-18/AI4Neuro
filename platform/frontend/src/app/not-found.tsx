@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Brain, Compass } from 'lucide-react';
+import { Brain, Compass } from '@/components/icons';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7fafc] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="max-w-md w-full text-center bg-white border border-slate-200 rounded-3xl shadow-sm p-8">
         <div className="w-20 h-20 mx-auto mb-6 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-200">
           <Compass className="w-10 h-10 text-blue-500" />

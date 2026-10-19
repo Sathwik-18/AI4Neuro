@@ -1,13 +1,13 @@
 """Shared FastAPI dependencies (service accessors + auth enrichment).
 
 Kept trivial so routes stay thin. Each request gets service instances bound to the
-configured Supabase client; tests override these via ``app.dependency_overrides``.
+configured Firebase client; tests override these via ``app.dependency_overrides``.
 """
 
 from __future__ import annotations
 
-import httpx
 from fastapi import Depends, HTTPException, status
+from google.api_core.exceptions import GoogleAPICallError
 
 from app.core.security import Principal, get_current_principal
 from app.services.auth_admin import AuthAdminService
@@ -24,7 +24,7 @@ def get_storage() -> StorageService:
 
 
 def get_auth_admin() -> AuthAdminService:
-    from app.services.supabase_client import get_service_client
+    from app.services.firebase_client import get_service_client
 
     return AuthAdminService(client=get_service_client())
 
@@ -43,12 +43,12 @@ def get_current_user(
 
     try:
         profile = db.get_user_profile(principal.user_id)
-    except httpx.HTTPError as exc:
+    except GoogleAPICallError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={
-                "code": "supabase_unavailable",
-                "message": "Could not reach Supabase while loading your profile. Please retry.",
+                "code": "database_unavailable",
+                "message": "Could not reach the database while loading your profile. Please retry.",
             },
         ) from exc
     if not profile:

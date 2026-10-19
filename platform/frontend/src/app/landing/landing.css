@@ -1927,3 +1927,84 @@ html {
     white-space: normal;
   }
 }
+
+/* ============================================================================
+   ILLUSTRATIONS (components/illustrations/neuro.tsx)
+   ============================================================================ */
+.hero-illustration {
+  position: absolute;
+  inset: 40px 26px 54px 30px;
+  width: calc(100% - 56px);
+  height: calc(100% - 94px);
+}
+
+.ai4-scanline {
+  animation: ai4-scan 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes ai4-scan {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(330px); }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai4-scanline { animation: none; transform: translateY(160px); }
+}
+
+.service-art {
+  width: 100%;
+  height: 100%;
+  padding: 10px 14px;
+}
+
+@media (max-width: 760px) {
+  .hero-visual { min-height: 0; padding: 28px 14px 36px; }
+  .hero-illustration { position: relative; inset: auto; width: 100%; height: auto; }
+}
+
+.about-illustration {
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+  padding: 28px 24px 18px;
+}
+
+@media (max-width: 760px) {
+  .about-illustration { min-height: 360px; padding: 18px 10px 10px; }
+}
+
+/* ============================================================================
+   DISPLAY TYPE — Anton for every landing headline (matches the dashboards)
+   ============================================================================ */
+.landing-wrap h1,
+.landing-wrap h2 {
+  font-family: var(--font-anton), Impact, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.02;
+}
+
+.landing-wrap h1 .hero-variable-title {
+  display: inline-block;
+  font-weight: 400;
+}
+
+.process-heading {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.process-heading h2 {
+  text-align: left;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 4.4vw, 4.5rem);
+  line-height: 0.98;
+}
+
+.process-heading .process-title {
+  color: #462E26;
+  font-size: clamp(1.9rem, 3.8vw, 3.5rem);
+}

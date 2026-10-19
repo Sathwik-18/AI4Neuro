@@ -50,7 +50,8 @@ import {
   ArrowUpDown,
   Filter,
   RefreshCw,
-} from 'lucide-react';
+  ScanLine,
+} from '@/components/icons';
 import { DashboardShell } from '@/components/dashboards/shared/DashboardShell';
 import { useAuth } from '@/components/providers/AuthProvider';
 import {
@@ -1219,10 +1220,10 @@ export const HospitalAdminDashboard: React.FC = () => {
           <QuickActionsList
             accent="teal"
             actions={[
-              { label: 'Add Doctor', onClick: () => setIsCreateUserOpen(true) },
-              { label: 'Add Radiologist', onClick: () => setIsCreateUserOpen(true) },
-              { label: 'Add Patient', onClick: () => setIsCreateUserOpen(true) },
-              { label: 'View Scan Sessions', href: '/admin/sessions' },
+              { label: 'Add Doctor', onClick: () => setIsCreateUserOpen(true), icon: Stethoscope },
+              { label: 'Add Radiologist', onClick: () => setIsCreateUserOpen(true), icon: Brain },
+              { label: 'Add Patient', onClick: () => setIsCreateUserOpen(true), icon: UserPlus },
+              { label: 'View Scan Sessions', href: '/admin/sessions', icon: ScanLine },
             ]}
           />
         </div>

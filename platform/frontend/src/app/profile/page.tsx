@@ -1,5 +1,7 @@
 'use client';
 
+import { AppearanceSettings } from '@/components/shared/AppearanceSettings';
+import { BadgeCheck, Building2, Calendar, Clock, FlaskConical, GraduationCap, Home, Lock, LogOut, Mail, Phone, ShieldCheck } from '@/components/icons';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -421,36 +423,28 @@ function ProfilePage() {
             label: 'Assigned Doctor',
             value: assignedDoctorName,
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
+              <BadgeCheck className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Associated Hospital',
             value: roleProfile?.hospital_name || roleProfile?.hospitals?.name || hospitalName || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <Building2 className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Date of Birth',
             value: roleProfile?.date_of_birth ? new Date(roleProfile.date_of_birth).toLocaleDateString() : '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <Calendar className="w-5 h-5 text-emerald-600" aria-hidden />
             ),
           },
           {
             label: 'Blood Group',
             value: roleProfile?.blood_type || roleProfile?.blood_groups?.blood_type || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+              <FlaskConical className="w-5 h-5 text-red-500" aria-hidden />
             ),
           },
           {
@@ -459,9 +453,7 @@ function ProfilePage() {
               .filter(Boolean)
               .join(' - '),
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
+              <Phone className="w-5 h-5 text-amber-500" aria-hidden />
             ),
           },
         ];
@@ -472,46 +464,35 @@ function ProfilePage() {
             label: 'Qualification',
             value: roleProfile?.qualification_name || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
+              <GraduationCap className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'License Number',
             value: roleProfile?.medical_license || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
+              <BadgeCheck className="w-5 h-5 text-emerald-600" aria-hidden />
             ),
           },
           {
             label: 'Specialization',
             value: roleProfile?.specialization || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+              <FlaskConical className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Hospital',
             value: roleProfile?.hospital_name || roleProfile?.hospitals?.name || hospitalName || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <Building2 className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Experience',
             value: roleProfile?.experience_years ? `${roleProfile.experience_years} years` : '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Clock className="w-5 h-5 text-amber-500" aria-hidden />
             ),
           },
         ];
@@ -521,55 +502,42 @@ function ProfilePage() {
             label: 'Qualification',
             value: roleProfile?.qualification_name || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
+              <GraduationCap className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'License Number',
             value: roleProfile?.radiologist_license || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
+              <BadgeCheck className="w-5 h-5 text-emerald-600" aria-hidden />
             ),
           },
           {
             label: 'Imaging Expertise',
             value: roleProfile?.imaging_expertise || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+              <FlaskConical className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Certifications',
             value: roleProfile?.certifications || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <ShieldCheck className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Hospital',
             value: roleProfile?.hospital_name || roleProfile?.hospitals?.name || hospitalName || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <Building2 className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Experience',
             value: roleProfile?.experience_years ? `${roleProfile.experience_years} years` : '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Clock className="w-5 h-5 text-amber-500" aria-hidden />
             ),
           },
         ];
@@ -579,27 +547,21 @@ function ProfilePage() {
             label: 'Employee ID',
             value: roleProfile?.employee_id || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <ShieldCheck className="w-5 h-5 text-emerald-600" aria-hidden />
             ),
           },
           {
             label: 'Department',
             value: roleProfile?.department || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+              <FlaskConical className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
           {
             label: 'Hospital',
             value: roleProfile?.hospital_name || roleProfile?.hospitals?.name || hospitalName || '',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <Building2 className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
         ];
@@ -609,9 +571,7 @@ function ProfilePage() {
             label: 'Access Level',
             value: 'Platform (all hospitals)',
             icon: (
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <ShieldCheck className="w-5 h-5 text-blue-600" aria-hidden />
             ),
           },
         ];
@@ -659,8 +619,8 @@ function ProfilePage() {
           <div className="pb-6">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Contact</h2>
             <div className="space-y-0.5">
-              <InfoRow label="Email" value={email} accent={accent} icon={<svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2.5 6.5l6.5 4.3a1.5 1.5 0 001.6 0l6.5-4.3M4 15.5h12a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H4A1.5 1.5 0 002.5 6v8a1.5 1.5 0 001.5 1.5z" /></svg>} />
-              <InfoRow label="Phone" value={phone} accent={accent} icon={<svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2.5 4a1.5 1.5 0 011.5-1.5h2.46a.75.75 0 01.71.51l1.12 3.37a.75.75 0 01-.38.91l-1.7.85a8.28 8.28 0 004.14 4.14l.85-1.7a.75.75 0 01.91-.38l3.37 1.12a.75.75 0 01.51.71V15.5a1.5 1.5 0 01-1.5 1.5h-.75C7.29 17 2.5 12.21 2.5 5.5V4z" /></svg>} />
+              <InfoRow label="Email" value={email} accent={accent} icon={<Mail className="w-4 h-4" aria-hidden />} />
+              <InfoRow label="Phone" value={phone} accent={accent} icon={<Phone className="w-4 h-4" aria-hidden />} />
             </div>
           </div>
 
@@ -678,6 +638,8 @@ function ProfilePage() {
             </div>
           )}
 
+          <AppearanceSettings />
+
           {/* Account */}
           <div className="py-6">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Account</h2>
@@ -685,13 +647,13 @@ function ProfilePage() {
               <SettingsLink
                 href="/change-password"
                 accent={accent}
-                icon={<svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10 12.5v1.5m-4.5 3h9a1.5 1.5 0 001.5-1.5v-4.5a1.5 1.5 0 00-1.5-1.5h-9a1.5 1.5 0 00-1.5 1.5V15a1.5 1.5 0 001.5 1.5zm7.5-7.5V6a3 3 0 00-6 0v2.5h6z" /></svg>}
+                icon={<Lock className="w-4 h-4" aria-hidden />}
                 title="Change password"
               />
               <SettingsLink
                 href={getRoleMeta(role).dashboard}
                 accent={accent}
-                icon={<svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2.5 10l1.5-1.5m0 0l5.25-5.25 5.25 5.25M4 8.5v7.5a.75.75 0 00.75.75h2.25m7.5-8.25l1.5 1.5m-1.5-1.5v7.5a.75.75 0 01-.75.75h-2.25m-4.5 0a.75.75 0 00.75-.75v-3a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v3a.75.75 0 00.75.75m-4.5 0h4.5" /></svg>}
+                icon={<Home className="w-4 h-4" aria-hidden />}
                 title="Go to dashboard"
               />
             </div>
@@ -707,7 +669,7 @@ function ProfilePage() {
               {isLoggingOut ? (
                 <MaterialIcon name="progress_activity" size={16} className="animate-spin" />
               ) : (
-                <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13 13.5l3-3m0 0l-3-3m3 3H5.5m4.5 3v.75a2.25 2.25 0 01-2.25 2.25H4.5A2.25 2.25 0 012.25 14V5.5A2.25 2.25 0 014.5 3.25h3.25A2.25 2.25 0 0110 5.5v.75" /></svg>
+                <LogOut className="w-4 h-4" aria-hidden />
               )}
               {isLoggingOut ? 'Signing out…' : 'Sign out'}
             </button>

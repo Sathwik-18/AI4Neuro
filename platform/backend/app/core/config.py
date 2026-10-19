@@ -45,14 +45,26 @@ class Settings(BaseSettings):
     # Comma-separated list of allowed CORS origins.
     cors_origins: str = Field(default="http://localhost:3000", alias="CORS_ORIGINS")
 
-    # ---- Supabase ----
+    # ---- Firebase (shared project with ManasMitra) ----
     # Kept optional so the app can boot for local/dev + tests without secrets.
     # Services raise a clear error only when an operation actually needs them.
+    firebase_project_id: str | None = Field(default=None, alias="FIREBASE_PROJECT_ID")
+    # Service-account key file. Needed for database/storage/user management and
+    # for signing download URLs; token verification only needs the project id.
+    firebase_credentials_path: str | None = Field(
+        default=None, alias="FIREBASE_CREDENTIALS_PATH"
+    )
+    # Defaults to "<project>.firebasestorage.app" when unset.
+    firebase_storage_bucket: str | None = Field(default=None, alias="FIREBASE_STORAGE_BUCKET")
+
+    # ---- Supabase (LEGACY — used only while FIREBASE_PROJECT_ID is unset, so
+    # existing local setups keep working during the migration; delete at cut-over)
     supabase_url: str | None = Field(default=None, alias="SUPABASE_URL")
     supabase_service_role_key: str | None = Field(
         default=None, alias="SUPABASE_SERVICE_ROLE_KEY"
     )
     supabase_jwt_secret: str | None = Field(default=None, alias="SUPABASE_JWT_SECRET")
+    supabase_http_timeout_seconds: float = Field(default=600.0, alias="SUPABASE_HTTP_TIMEOUT_SECONDS")
 
     # ---- Storage buckets (doc 7.2) ----
     raw_files_bucket: str = Field(default="raw-files", alias="RAW_FILES_BUCKET")
@@ -71,11 +83,6 @@ class Settings(BaseSettings):
     # ---- Uploads ----
     local_tmp_dir: str = Field(default="/tmp/neuro-platform", alias="LOCAL_TMP_DIR")
     max_upload_mb: int = Field(default=512, alias="MAX_UPLOAD_MB")
-    # Large raw scans (MRI NIfTI especially) can take a while to actually
-    # finish transferring to Supabase Storage on a slow/asymmetric upload
-    # connection - this must comfortably exceed that, not just the time a
-    # small REST query needs. Same httpx client is shared for both.
-    supabase_http_timeout_seconds: float = Field(default=600.0, alias="SUPABASE_HTTP_TIMEOUT_SECONDS")
 
     # ---- Auth ----
     # When true, the JWT guard accepts requests without a valid token and injects a

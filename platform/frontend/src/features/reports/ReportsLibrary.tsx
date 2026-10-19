@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Brain, ChevronRight, Eye, FileText, Folder, LayoutGrid, List, Loader2, Search, Waves, X } from 'lucide-react';
+import { Brain, ChevronRight, Eye, FileText, Folder, LayoutGrid, List, Loader2, Search, Waves, X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/lib/roles';
 import { analysisApi, type ListSort } from '@/features/analysis/api';
@@ -115,7 +115,7 @@ function ReportCard({ item, role, onOpen, busy }: {
           </p>
           <p className="text-xs text-slate-500">
             {item.analysis_type === 'binary' ? 'Binary' : 'Multiclass'}
-            {item.doctor_name ? ` · Dr. ${item.doctor_name}` : ''}
+            {item.doctor_name ? ` · ${/^dr\.?\s/i.test(item.doctor_name) ? item.doctor_name : `Dr. ${item.doctor_name}`}` : ''}
           </p>
         </div>
         {item.confidence != null && (
@@ -135,7 +135,7 @@ function ReportCard({ item, role, onOpen, busy }: {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 pt-1 mt-auto">
+      <div className="flex items-center gap-2 pt-1 mt-auto">
         {!isPatient && (
           <button
             type="button"
@@ -156,9 +156,11 @@ function ReportCard({ item, role, onOpen, busy }: {
         </button>
         <Link
           href={viewerPathFor(role, item.id)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          aria-label="Open analysis"
+          title="Open analysis"
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50"
         >
-          <Eye className="h-3 w-3" /> Open
+          <Eye className="h-4 w-4" />
         </Link>
       </div>
     </article>

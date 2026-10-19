@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, Users, User } from 'lucide-react';
+import { Search, Users, User } from '@/components/icons';
 import { RoleShell } from '@/components/dashboards/shared/RoleShell';
 import {
   SectionCard,

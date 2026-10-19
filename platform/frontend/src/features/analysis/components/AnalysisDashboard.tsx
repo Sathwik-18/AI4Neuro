@@ -11,7 +11,11 @@ import {
   Stethoscope,
   Mail,
   Phone,
-} from 'lucide-react';
+  Brain,
+  Waves,
+  ScanLine,
+  FileText,
+} from '@/components/icons';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { analysisApi } from '@/features/analysis/api';
@@ -31,6 +35,11 @@ import { reportsPathFor } from '@/features/analytics/shared';
 import { ActivityCalendar } from '@/components/dashboards/shared/ActivityCalendar';
 import { PatientReportModal, type PatientReportData } from '@/components/shared/PatientReportModal';
 import { toast } from 'sonner';
+
+function greeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
 
 const ROLE_COPY: Record<Role, { eyebrow: string; title: string; description: string }> = {
   super_admin: {
@@ -188,9 +197,9 @@ export function AnalysisDashboard() {
   return (
     <>
       <DashboardPageHeader
-        eyebrow={copy.eyebrow}
+        eyebrow={`${copy.eyebrow} · ${new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}`}
         title={copy.title}
-        description={copy.description}
+        description={`${greeting()}, ${userProfile?.full_name ?? 'there'}. ${copy.description}`}
         accent={meta.accent}
       />
 
@@ -210,7 +219,9 @@ export function AnalysisDashboard() {
             <div className="min-w-0">
               <p className="text-xs text-slate-500">Your Doctor</p>
               <p className="text-sm font-semibold text-slate-900">
-                Dr. {doctorContact.assigned_doctor_name}
+                {/^dr\.?\s/i.test(doctorContact.assigned_doctor_name)
+                  ? doctorContact.assigned_doctor_name
+                  : `Dr. ${doctorContact.assigned_doctor_name}`}
               </p>
             </div>
             <div className="flex items-center gap-4 ml-auto text-xs text-slate-600">
@@ -252,19 +263,20 @@ export function AnalysisDashboard() {
         />
       </div>
 
+      {canCreate && (
       <QuickActionsList
         accent={meta.accent}
+        layout="row"
         actions={
-          canCreate
-            ? [
-                { label: 'New MRI Analysis', href: '/analysis/new?modality=mri' },
-                { label: 'New EEG Analysis', href: '/analysis/new?modality=eeg' },
-                { label: 'View All Analyses', href: allAnalysesHref },
-                { label: 'Open Report Library', href: reportsPathFor(role) },
+          [
+                { label: 'New MRI analysis', hint: 'Upload a T1 NIfTI scan', href: '/analysis/new?modality=mri', icon: Brain },
+                { label: 'New EEG analysis', hint: 'Upload a 19-channel .npy', href: '/analysis/new?modality=eeg', icon: Waves },
+                { label: 'All analyses', hint: 'Every session you can access', href: allAnalysesHref, icon: ScanLine },
+                { label: 'Report library', hint: 'Filter by priority & diagnosis', href: reportsPathFor(role), icon: FileText },
               ]
-            : [{ label: 'View My Reports', href: reportsPathFor(role) }]
         }
       />
+      )}
 
       <DashboardAnalytics role={role} />
 
@@ -275,6 +287,11 @@ export function AnalysisDashboard() {
             <h3 className="text-sm font-semibold text-slate-900">Recent Analyses</h3>
             <p className="text-xs text-slate-500">Sessions available to your role</p>
           </div>
+          {!canCreate && (
+            <Link href={reportsPathFor(role)} className="text-xs font-medium text-primary hover:underline">
+              View my reports &rarr;
+            </Link>
+          )}
           {canCreate && (
             <Link
               href="/analysis/new"

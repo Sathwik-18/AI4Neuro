@@ -10,12 +10,15 @@ pydantic-settings==2.7.1
 python-multipart==0.0.20
 httpx==0.28.1
 
-# Supabase (modern key support: sb_publishable on frontend, sb_secret on backend)
+# Firebase: Firestore, Cloud Storage and Auth user management (shared project
+# with ManasMitra).
+firebase-admin==7.7.0
+
+# LEGACY Supabase client — fallback while FIREBASE_PROJECT_ID is unset; remove
+# at cut-over.
 supabase==2.31.0
 
-# Auth: verify Supabase-issued JWTs.
-# The crypto extra is required for newer Supabase asymmetric signing keys
-# (for example ES256) discovered through JWKS.
+# Auth: verify Firebase ID tokens (RS256, Google's public keys).
 PyJWT[crypto]==2.13.0
 
 # Shared utilities

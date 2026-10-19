@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Loader2, Lock, ShieldCheck, Clock, ShieldAlert } from 'lucide-react';
+import { Loader2, Lock, ShieldCheck, Clock, ShieldAlert } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { SectionCard } from '@/components/dashboards/shared/primitives';
 import { reportAccessApi, type ReportAccess } from '@/features/report-access/api';

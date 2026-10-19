@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Brain, Clock, ShieldAlert, Ban } from 'lucide-react';
+import { Ban, Brain, Clock, Info, ShieldAlert } from '@/components/icons';
 import { useAuth } from '@/components/providers/AuthProvider';
 import type { AccountStatus } from '@/lib/roles';
 
@@ -54,7 +54,7 @@ export default function AccountSuspendedPage() {
   const isPending = userProfile?.account_status === 'pending';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7fafc] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="max-w-md w-full text-center bg-white border border-slate-200 rounded-3xl shadow-sm p-8">
         {/* Status icon */}
         <div
@@ -71,19 +71,7 @@ export default function AccountSuspendedPage() {
         {!isPending && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+              <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden />
               <div className="text-left text-sm text-amber-800">
                 <p className="font-medium">Need help?</p>
                 <p className="text-amber-700/80">Contact support at support@ai4neuro.com or speak with your hospital administrator.</p>

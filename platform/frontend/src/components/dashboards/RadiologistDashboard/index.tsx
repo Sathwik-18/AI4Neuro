@@ -29,7 +29,7 @@ import {
   ArrowUpDown,
   Filter,
   CalendarDays,
-} from 'lucide-react';
+} from '@/components/icons';
 import Link from 'next/link';
 import { DashboardShell } from '@/components/dashboards/shared/DashboardShell';
 import { useAuth } from '@/components/providers/AuthProvider';

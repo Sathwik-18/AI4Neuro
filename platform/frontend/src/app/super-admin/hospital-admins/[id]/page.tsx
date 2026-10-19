@@ -11,7 +11,7 @@ import {
   Stethoscope,
   Users,
   Waves,
-} from 'lucide-react';
+} from '@/components/icons';
 import { RoleShell } from '@/components/dashboards/shared/RoleShell';
 import {
   DashboardPageHeader,
@@ -62,8 +62,8 @@ function HospitalAdminProfilePageInner() {
 
   const modalitySegments = admin
     ? [
-        { name: 'MRI', value: admin.mri_count, color: '#0d9488' },
-        { name: 'EEG', value: admin.eeg_count, color: '#2563eb' },
+        { name: 'MRI', value: admin.mri_count, color: 'var(--color-blue-700)' },
+        { name: 'EEG', value: admin.eeg_count, color: 'var(--primary)' },
       ].filter((s) => s.value > 0)
     : [];
 

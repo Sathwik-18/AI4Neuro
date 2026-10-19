@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { dashboardPathFor, ROLE_META } from '@/lib/roles';
@@ -13,7 +13,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  BrainCircuit,
   LogIn,
   Menu,
   MoveUpRight,
@@ -36,8 +35,9 @@ import {
   Lock,
   ListChecks,
   HeartPulse,
-} from 'lucide-react';
-import { VariableProximity, GradientText, RotatingText } from './_effects';
+} from '@/components/icons';
+import { GradientText, RotatingText } from './_effects';
+import { HeroScanIllustration, MriCardArt, EegCardArt, PetCardArt, ClinicianReportIllustration } from '@/components/illustrations/neuro';
 import './landing.css';
 
 // ============================================================================
@@ -188,7 +188,6 @@ function PublicNavbar() {
 // HERO
 // ============================================================================
 function Hero() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
 
   return (
     <section className="hero section-shell" id="home">
@@ -198,16 +197,16 @@ function Hero() {
           Early Alzheimer&apos;s Detection
         </div>
 
-        <h1 ref={headingRef}>
-          <VariableProximity
-            label={"AI-powered\nneuro diagnostics\nfor earlier,\nclearer decisions."}
-            className="hero-variable-title"
-            fromFontVariationSettings="'wght' 520, 'opsz' 12"
-            toFontVariationSettings="'wght' 1000, 'opsz' 12"
-            containerRef={headingRef}
-            radius={145}
-            falloff="gaussian"
-          />
+        <h1>
+          <span className="hero-variable-title">
+            AI-powered
+            <br />
+            neuro diagnostics
+            <br />
+            for earlier,
+            <br />
+            clearer decisions.
+          </span>
         </h1>
 
         <p>
@@ -228,17 +227,7 @@ function Hero() {
       </div>
 
       <div className="hero-visual">
-        <div className="image-card patient-card">
-          <img src="/landing_homepage/patient.png" alt="Patient consultation" className="hero-image patient-img" />
-        </div>
-
-        <div className="helix-wrap" aria-hidden="true">
-          <img
-            src="/landing_homepage/double_helix_animation.gif"
-            alt=""
-            className="helix-img"
-          />
-        </div>
+        <HeroScanIllustration className="hero-illustration" />
       </div>
     </section>
   );
@@ -277,21 +266,21 @@ const services = [
     title: 'MRI Analysis',
     text: 'Structural brain scan review for volume, region change, and Alzheimer-linked imaging markers.',
     visual: 'mri',
-    image: '/services/mripatient.png',
+    Art: MriCardArt,
   },
   {
     icon: <RadioTower size={24} />,
     title: 'EEG Intelligence',
     text: 'Signal pattern analysis for rhythm, slowing, connectivity, and cognitive decline indicators.',
     visual: 'eeg',
-    image: '/services/eegpatient.png',
+    Art: EegCardArt,
   },
   {
     icon: <Brain size={24} />,
     title: 'PET Biomarkers',
     text: 'Metabolic and amyloid-sensitive PET support for earlier specialist-led interpretation.',
     visual: 'pet',
-    image: '/services/petpatient.png',
+    Art: PetCardArt,
     comingSoon: true,
   },
 ];
@@ -325,7 +314,7 @@ function ServicesSection() {
             key={service.title}
           >
             <div className={`service-visual service-visual-${service.visual}`}>
-              <img className="service-image" src={service.image} alt={`${service.title} patient`} />
+              <service.Art className="service-art" />
             </div>
 
             {service.comingSoon ? (
@@ -380,16 +369,7 @@ function ProcessSection() {
     <section className="process-section section-shell" id="process">
       <div className="process-heading">
         <div className="eyebrow">Workflow</div>
-        <h2>
-          <GradientText
-            colors={['#31241F', '#806257', '#C7A79B']}
-            animationSpeed={8}
-            showBorder={false}
-            className="process-gradient-heading text-4xl font-bold"
-          >
-            From scan to early insight.
-          </GradientText>
-        </h2>
+        <h2 className="process-title">From scan to early insight.</h2>
       </div>
       <div className="process-grid">
         {steps.map((step, index) => (
@@ -592,12 +572,7 @@ function AboutSection() {
     <section className="about-section section-shell" id="about">
       <div className="about-visual">
         <div className="about-image">
-          <img src="/landing_homepage/DoctorsGroup.png" alt="Doctors group" className="about-doctors-image" />
-        </div>
-        <div className="about-floating-card">
-          <BrainCircuit size={28} />
-          <strong>Multimodal AI</strong>
-          <small>MRI + EEG interpretation support</small>
+          <ClinicianReportIllustration className="about-illustration" />
         </div>
       </div>
 

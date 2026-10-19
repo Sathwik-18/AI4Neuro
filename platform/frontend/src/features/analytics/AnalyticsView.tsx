@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Activity, AlertTriangle, Brain, CheckCircle2, Clock, Layers, Waves } from 'lucide-react';
+import { Activity, AlertTriangle, Brain, CheckCircle2, Clock, Layers, Waves } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/lib/roles';
 import { analysisApi } from '@/features/analysis/api';
@@ -173,7 +173,7 @@ function StackedTrendCard({
   pick: (bucket: TrendBucket, key: string) => number;
   withModalityFilter?: boolean;
 }) {
-  const [trend, setTrend] = useState<TrendSpan>('8w');
+  const [trend, setTrend] = useState<TrendSpan>('6m');
   const [modality, setModality] = useState('all');
   const [selected, setSelected] = useState<number | null>(null);
   const { data, isLoading } = useStats(`trend-${id}`, {
@@ -224,7 +224,7 @@ function StackedTrendCard({
             {grand > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={totals} dataKey="value" nameKey="label" innerRadius={34} outerRadius={50} paddingAngle={2} stroke="none">
+                  <Pie data={totals} dataKey="value" nameKey="label" innerRadius={34} outerRadius={50} paddingAngle={2} stroke="none" isAnimationActive={false}>
                     {totals.map((t) => (
                       <Cell key={t.key} fill={t.hex} />
                     ))}
@@ -258,10 +258,10 @@ function StackedTrendCard({
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rows} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#EDE0DA" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#7D6E64' }} tickLine={false} axisLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#7D6E64' }} tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{ fill: '#F0E8E2' }} contentStyle={{ borderRadius: 8, borderColor: '#EDE0DA', fontSize: 12 }} />
+                  <CartesianGrid vertical={false} stroke="var(--border)" />
+                  <XAxis dataKey="label" interval={0} tickFormatter={(v: string) => (grain === 'monthly' ? v.split(' ')[0] : v)} tick={{ fontSize: 10.5, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickLine={false} axisLine={false} />
+                  <Tooltip cursor={{ fill: 'var(--muted)' }} contentStyle={{ borderRadius: 8, borderColor: 'var(--border)', backgroundColor: 'var(--card)', color: 'var(--foreground)', fontSize: 12 }} />
                   {series.map((s, i) => (
                     <Bar
                       key={s.key}
@@ -269,6 +269,7 @@ function StackedTrendCard({
                       name={s.label}
                       stackId="stack"
                       fill={s.hex}
+                      isAnimationActive={false}
                       radius={i === series.length - 1 ? [4, 4, 0, 0] : 0}
                       onClick={(_, index) => setSelected(index)}
                       className="cursor-pointer"

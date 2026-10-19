@@ -19,7 +19,7 @@ import {
   Lightbulb,
   BookOpen,
   ClipboardList,
-} from 'lucide-react';
+} from '@/components/icons';
 import Link from 'next/link';
 import { use } from 'react';
 import {

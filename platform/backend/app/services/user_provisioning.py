@@ -1,4 +1,4 @@
-"""Atomic user provisioning: Supabase Auth account + user_profiles + role-detail row.
+"""Atomic user provisioning: Firebase Auth account + user_profiles + role-detail row.
 
 Single source of truth for "who can create whom" + the actual creation flow,
 used by both ``POST /platform/users`` (admin/super_admin accounts) and
@@ -61,7 +61,7 @@ def create_user_account(
             detail={"code": "hospital_required", "message": "hospital_id is required for this role."},
         )
 
-    # 1) Provision the Supabase Auth account (email/password login).
+    # 1) Provision the Firebase Auth account (email/password login).
     try:
         auth_result = auth_admin.create_auth_user(
             email=payload.email, full_name=payload.full_name, role=target_role
@@ -141,6 +141,11 @@ def create_user_account(
                 "message": "Auth account was created but the profile could not be saved; rolled back.",
             },
         ) from exc
+
+    # Role and hospital never change after creation, so the token claims are
+    # written once, here. (Suspension needs no claim: every request re-checks
+    # account_status from the stored profile.)
+    auth_admin.set_claims(user_id, role=target_role, hospital_id=target_hospital_id)
 
     # TODO: wire "temporary_password" delivery to the org's chosen email
     # service (the Next.js route used nodemailer/SMTP; replicating that

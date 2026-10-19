@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Brain, ShieldCheck, Lock, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Brain, Check, CheckCircle2, Eye, EyeOff, Loader2, Lock, ShieldCheck } from '@/components/icons';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getRoleMeta, type Role } from '@/lib/navigation';
@@ -173,7 +173,7 @@ export default function ChangePasswordPage() {
   const passwordsMatch = newPassword === confirmPassword && newPassword.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#f7fafc] flex">
+    <div className="min-h-screen bg-background flex">
       {/* Left Panel - Form */}
       <div className="w-full lg:w-[45%] flex flex-col bg-white">
         {/* Logo Header */}
@@ -231,15 +231,9 @@ export default function ChangePasswordPage() {
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     {showPassword ? (
-                      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="1" y1="1" x2="23" y2="23" strokeLinecap="round"/>
-                      </svg>
+                      <EyeOff className="w-5 h-5" aria-hidden />
                     ) : (
-                      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round"/>
-                        <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <Eye className="w-5 h-5" aria-hidden />
                     )}
                   </button>
                 </div>
@@ -269,17 +263,13 @@ export default function ChangePasswordPage() {
                 <ul className="space-y-2">
                   <li className="flex items-center gap-2 text-sm">
                     <div className={cn('w-5 h-5 rounded-full flex items-center justify-center', meetsLength ? t.lightBg : 'bg-slate-200')}>
-                      <svg viewBox="0 0 20 20" className={cn('w-3.5 h-3.5', meetsLength ? t.text : 'text-slate-400')} fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
+                      <Check className={cn('w-3.5 h-3.5', meetsLength ? t.text : 'text-slate-400')} aria-hidden />
                     </div>
                     <span className={meetsLength ? t.text : 'text-slate-500'}>At least 8 characters</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <div className={cn('w-5 h-5 rounded-full flex items-center justify-center', passwordsMatch ? t.lightBg : 'bg-slate-200')}>
-                      <svg viewBox="0 0 20 20" className={cn('w-3.5 h-3.5', passwordsMatch ? t.text : 'text-slate-400')} fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
+                      <Check className={cn('w-3.5 h-3.5', passwordsMatch ? t.text : 'text-slate-400')} aria-hidden />
                     </div>
                     <span className={passwordsMatch ? t.text : 'text-slate-500'}>Passwords match</span>
                   </li>
@@ -294,10 +284,7 @@ export default function ChangePasswordPage() {
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                    </svg>
+                    <Loader2 className="animate-spin h-5 w-5" aria-hidden />
                     <span>Updating...</span>
                   </>
                 ) : (
@@ -330,7 +317,7 @@ export default function ChangePasswordPage() {
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(37, 99, 235, 0.08)" strokeWidth="1"/>
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(128, 98, 87, 0.08)" strokeWidth="1"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />

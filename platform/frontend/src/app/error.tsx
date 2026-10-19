@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { Brain, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Brain, AlertTriangle, RefreshCw } from '@/components/icons';
 
 export default function GlobalError({
   error,
@@ -16,7 +16,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7fafc] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="max-w-md w-full text-center bg-white border border-slate-200 rounded-3xl shadow-sm p-8">
         <div className="w-20 h-20 mx-auto mb-6 bg-red-50 rounded-2xl flex items-center justify-center border border-red-200">
           <AlertTriangle className="w-10 h-10 text-red-500" />

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
-import { Search, Users, MoreHorizontal, Loader2, Plus } from 'lucide-react';
+import { Search, Users, MoreHorizontal, Loader2, Plus } from '@/components/icons';
 import { SectionCard, DashboardPageHeader, StatusBadge, ACCENT_STYLES, type Accent } from './primitives';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

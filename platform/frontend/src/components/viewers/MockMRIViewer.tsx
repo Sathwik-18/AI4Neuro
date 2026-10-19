@@ -13,7 +13,7 @@ import {
   Play,
   Pause,
   RotateCcw,
-} from 'lucide-react';
+} from '@/components/icons';
 
 interface MockMRIViewerProps {
   sessionId: string;

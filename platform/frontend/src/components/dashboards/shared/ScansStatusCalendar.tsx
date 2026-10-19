@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { ChevronDown, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, ArrowUpRight } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { SectionCard, ACCENT_STYLES, type Accent } from './primitives';
 import type { SessionStatusResponse } from '@/features/analysis/types';
@@ -137,7 +137,7 @@ export function ScansStatusCalendar({
   }, [sessions, year, month]);
 
   const growthPercentage = useMemo(() => {
-    if (prevMonthStats === 0) return '+5.2%';
+    if (prevMonthStats === 0) return null; // no baseline to compare against
     const pct = ((currentMonthStats.total - prevMonthStats) / prevMonthStats) * 100;
     return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
   }, [currentMonthStats.total, prevMonthStats]);
@@ -181,15 +181,19 @@ export function ScansStatusCalendar({
             <h2 className="text-4xl font-extrabold text-slate-900 leading-none">
               {currentMonthStats.total.toLocaleString()}
             </h2>
-            <span className={cn(
-              "inline-flex items-center gap-0.5 text-xs font-bold",
-              currentMonthStats.total >= prevMonthStats ? "text-emerald-600" : "text-rose-600"
-            )}>
-              {currentMonthStats.total >= prevMonthStats ? '↗' : '↘'} {growthPercentage}
-            </span>
+            {growthPercentage && (
+              <span className={cn(
+                "inline-flex items-center gap-0.5 text-xs font-bold",
+                currentMonthStats.total >= prevMonthStats ? "text-emerald-600" : "text-rose-600"
+              )}>
+                {currentMonthStats.total >= prevMonthStats ? '↗' : '↘'} {growthPercentage}
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-slate-400 font-medium mt-1">
-            Increased by <span className="text-emerald-600 font-semibold">+{Math.max(0, currentMonthStats.total - prevMonthStats)}</span> compared to last month
+            {prevMonthStats === 0
+              ? 'No scans last month to compare against'
+              : `${currentMonthStats.total - prevMonthStats >= 0 ? '+' : ''}${currentMonthStats.total - prevMonthStats} compared to last month (${prevMonthStats})`}
           </p>
         </div>
 

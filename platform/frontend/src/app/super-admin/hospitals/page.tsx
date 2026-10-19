@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';
-import { Search, Building2, Plus, MoreHorizontal, Loader2, ChevronRight } from 'lucide-react';
+import { Search, Building2, Plus, MoreHorizontal, Loader2, ChevronRight } from '@/components/icons';
 import { RoleShell } from '@/components/dashboards/shared/RoleShell';
 import {
   SectionCard,
@@ -412,7 +412,7 @@ function HospitalsPage() {
       showCancelButton: true,
       confirmButtonText: label === 'activated' ? 'Activate' : isDeactivate ? 'Deactivate' : 'Suspend',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: blocksLogins ? '#dc2626' : '#4f46e5',
+      confirmButtonColor: blocksLogins ? '#dc2626' : 'var(--primary)',
     });
     if (!confirm.isConfirmed) return;
 

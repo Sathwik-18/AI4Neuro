@@ -1,10 +1,9 @@
 """Authentication guard.
 
-Verifies Supabase-issued access tokens (``Authorization: Bearer <token>``).
-Supabase projects may issue either legacy HS256 tokens signed with the project's
-JWT secret, or newer asymmetric tokens (for example ES256) discoverable through
-the project's JWKS endpoint. The old Flask backends had **no** backend auth and
-trusted client-supplied ids; this closes that gap.
+Verifies Firebase ID tokens (``Authorization: Bearer <token>``) against Google's
+public signing keys. The token only proves *who* the caller is; role, hospital
+and account status always come from the profile the backend stores (see
+``api.deps.get_current_user``), never from the token.
 
 For the foundation, ``AUTH_DEV_BYPASS`` lets the app run before profiles/roles are
 fully wired (Phase 5): when enabled and no valid token is present, a dev principal
@@ -31,9 +30,8 @@ class Principal:
     """The authenticated caller.
 
     ``role``/``hospital_id``/``status`` are the app-level values loaded from
-    ``user_profiles`` (see ``api.deps.get_current_user``); the JWT only carries the
-    Supabase auth identity. ``role`` may be pre-set from the token for the dev
-    principal.
+    ``user_profiles`` (see ``api.deps.get_current_user``); the token only carries
+    the Firebase identity. ``role`` is pre-set only for the dev principal.
     """
 
     user_id: str
@@ -46,40 +44,57 @@ class Principal:
     profile: dict = field(default_factory=dict)
 
 
+_GOOGLE_JWKS_URL = (
+    "https://www.googleapis.com/service_accounts/v1/jwk/"
+    "securetoken@system.gserviceaccount.com"
+)
+
+
 def _decode_token(token: str, settings: Settings) -> dict:
+    """Verify a Firebase ID token: RS256, signed by Google's securetoken keys,
+    issued for *this* Firebase project."""
     import jwt  # PyJWT
 
-    header = jwt.get_unverified_header(token)
-    algorithm = header.get("alg")
+    project_id = settings.firebase_project_id
+    if not project_id:
+        return _decode_legacy_supabase_token(token, settings)
 
-    if algorithm == "HS256" and settings.supabase_jwt_secret:
-        return jwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-            leeway=30,  # tolerate clock drift between this host and Supabase
-        )
-
-    if settings.supabase_url:
-        signing_key = _jwks_client(settings.supabase_url).get_signing_key_from_jwt(token)
-        return jwt.decode(
-            token,
-            signing_key.key,
-            algorithms=["ES256", "RS256"],
-            audience="authenticated",
-            leeway=30,  # tolerate clock drift between this host and Supabase
-        )
-
-    raise ValueError("Supabase JWT verification is not configured.")
+    signing_key = _jwks_client().get_signing_key_from_jwt(token)
+    return jwt.decode(
+        token,
+        signing_key.key,
+        algorithms=["RS256"],
+        audience=project_id,
+        issuer=f"https://securetoken.google.com/{project_id}",
+        leeway=30,  # tolerate clock drift between this host and Google
+    )
 
 
-@lru_cache(maxsize=8)
-def _jwks_client(supabase_url: str):
+@lru_cache(maxsize=1)
+def _jwks_client():
     from jwt import PyJWKClient
 
-    base = supabase_url.rstrip("/")
-    return PyJWKClient(f"{base}/auth/v1/.well-known/jwks.json")
+    return PyJWKClient(_GOOGLE_JWKS_URL)
+
+
+def _decode_legacy_supabase_token(token: str, settings: Settings) -> dict:
+    """LEGACY (delete at cut-over): verify a Supabase access token, used only
+    while FIREBASE_PROJECT_ID is unset."""
+    import jwt
+    from jwt import PyJWKClient
+
+    if jwt.get_unverified_header(token).get("alg") == "HS256" and settings.supabase_jwt_secret:
+        return jwt.decode(
+            token, settings.supabase_jwt_secret, algorithms=["HS256"],
+            audience="authenticated", leeway=30,
+        )
+    if settings.supabase_url:
+        jwks = PyJWKClient(f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json")
+        return jwt.decode(
+            token, jwks.get_signing_key_from_jwt(token).key, algorithms=["ES256", "RS256"],
+            audience="authenticated", leeway=30,
+        )
+    raise ValueError("Token verification is not configured.")
 
 
 def get_current_principal(
@@ -89,13 +104,12 @@ def get_current_principal(
     """FastAPI dependency resolving the current authenticated principal."""
     token = _extract_bearer(authorization)
 
-    if token and (settings.supabase_jwt_secret or settings.supabase_url):
+    if token and (settings.firebase_project_id or settings.supabase_url or settings.supabase_jwt_secret):
         try:
             claims = _decode_token(token, settings)
             return Principal(
                 user_id=claims.get("sub", ""),
                 email=claims.get("email"),
-                role=claims.get("role"),
                 claims=claims,
             )
         except Exception as exc:  # invalid/expired token

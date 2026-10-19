@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Loader2, Brain, Waves, ScanLine, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Brain, Waves, ScanLine, ArrowLeft } from '@/components/icons';
 import { createClient } from '@/lib/supabase/client';
 import { BrandLogo } from '@/components/shared/BrandLogo';
 import { toast } from 'sonner';

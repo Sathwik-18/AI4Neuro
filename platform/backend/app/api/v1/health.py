@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.security import Principal
-from app.services.supabase_client import get_service_client
+from app.services.firebase_client import get_service_client
 
 router = APIRouter(prefix="/health", tags=["health"])
 
@@ -45,9 +45,11 @@ def health() -> HealthResponse:
 
 @router.get("/database", response_model=DatabaseHealthResponse)
 def health_database(principal: Principal = Depends(get_current_user)) -> DatabaseHealthResponse:
-    """Report whether Supabase is configured (does not run a query in MVP)."""
+    """Report whether Firebase is configured (does not run a query in MVP)."""
     settings = get_settings()
-    configured = bool(settings.supabase_url and settings.supabase_service_role_key)
+    configured = bool(settings.firebase_project_id) or bool(
+        settings.supabase_url and settings.supabase_service_role_key
+    )
     return DatabaseHealthResponse(status="ok" if configured else "not_configured", configured=configured)
 
 

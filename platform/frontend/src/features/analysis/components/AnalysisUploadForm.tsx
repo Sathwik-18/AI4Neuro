@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, Brain, CheckCircle2, FileUp, Stethoscope, User, X } from 'lucide-react';
+import { Activity, Brain, CheckCircle2, FileUp, Stethoscope, User, X } from '@/components/icons';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import Swal from 'sweetalert2';

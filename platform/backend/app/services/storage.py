@@ -11,11 +11,11 @@ import os
 import re
 import tempfile
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.services.supabase_client import get_service_client, require_client
+from app.services.firebase_client import get_service_client, require_client
 
 logger = get_logger(__name__)
 
@@ -182,8 +182,11 @@ class StorageService:
             return res.get("signedURL") or res.get("signed_url") or res.get("signedUrl") or ""
         return str(res)
 
-    # Matches .../storage/v1/object/sign/{bucket}/{path...}?token=...
-    _SIGNED_URL_PATH_RE = re.compile(r"/object/sign/(?P<bucket>[^/]+)/(?P<path>.+)$")
+    # A Cloud Storage signed URL's path is /{real bucket}/{prefix}/{path...};
+    # the prefix is our logical "bucket" (raw-files, reports, ...).
+    _SIGNED_URL_PATH_RE = re.compile(
+        r"^/(?:storage/v1/object/sign|[^/]+)/(?P<bucket>[^/]+)/(?P<path>.+)$"
+    )
 
     def refresh_signed_url(self, url: str | None, expires_in: int = 3600) -> str | None:
         """Re-sign a previously issued signed URL.
@@ -202,7 +205,7 @@ class StorageService:
         if not url:
             return url
         try:
-            match = self._SIGNED_URL_PATH_RE.search(urlsplit(url).path)
+            match = self._SIGNED_URL_PATH_RE.search(unquote(urlsplit(url).path))
             if not match:
                 return url
             return self.create_signed_url(

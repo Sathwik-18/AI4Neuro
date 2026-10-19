@@ -19,7 +19,7 @@ import {
   Landmark,
   ScanLine,
   LineChart,
-} from 'lucide-react';
+} from '@/components/icons';
 import type { NavItem } from '@/components/dashboards/shared/DashboardShell';
 import type { Accent } from '@/components/dashboards/shared/primitives';
 import { ROLES, ROLE_META as BASE_ROLE_META, type Role } from '@/lib/roles';

@@ -4,6 +4,27 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowUpRight,
+  Bell,
+  CheckCircle,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Info,
+  KeyRound,
+  Loader2,
+  Lock,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  X,
+  type AppIcon,
+} from '@/components/icons';
+import {
   BarChart,
   Bar,
   XAxis,
@@ -17,8 +38,27 @@ import {
 } from 'recharts';
 
 // ============================================================================
-// GOOGLE MATERIAL SYMBOL helper
+// Named icon helper (legacy Material Symbol names, rendered with Phosphor)
 // ============================================================================
+const NAMED_ICONS: Record<string, AppIcon> = {
+  arrow_back: ArrowLeft,
+  check_circle: CheckCircle,
+  chevron_left: ChevronLeft,
+  chevron_right: ChevronRight,
+  close: X,
+  error: AlertCircle,
+  expand_more: ChevronDown,
+  key: KeyRound,
+  lock: Lock,
+  logout: LogOut,
+  menu: Menu,
+  notifications: Bell,
+  pending: Clock,
+  person: User,
+  progress_activity: Loader2,
+  settings: Settings,
+};
+
 export function MaterialIcon({
   name,
   className,
@@ -30,18 +70,8 @@ export function MaterialIcon({
   size?: number;
   filled?: boolean;
 }) {
-  return (
-    <span
-      className={cn('material-symbols-outlined select-none', className)}
-      style={{
-        fontSize: size,
-        fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' ${size}`,
-      }}
-      aria-hidden="true"
-    >
-      {name}
-    </span>
-  );
+  const Icon = NAMED_ICONS[name] ?? Info;
+  return <Icon size={size} weight={filled ? 'fill' : 'regular'} className={cn('shrink-0', className)} aria-hidden />;
 }
 
 // ============================================================================
@@ -80,13 +110,13 @@ export const ACCENT_STYLES: Record<
 };
 
 export const ACCENT_HEX: Record<Accent, string> = {
-  green: '#2563eb',
-  indigo: '#2563eb',
-  blue: '#2563eb',
-  teal: '#2563eb',
+  green: 'var(--primary)',
+  indigo: 'var(--primary)',
+  blue: 'var(--primary)',
+  teal: 'var(--primary)',
 };
 
-export const NEUTRAL_CHART_HEX = '#94a3b8';
+export const NEUTRAL_CHART_HEX = 'var(--color-blue-300)';
 
 // ============================================================================
 // BRAIN WAVE LOADER
@@ -134,7 +164,7 @@ export function SectionCard({
     <div
       id={id}
       className={cn(
-        'rounded-lg bg-white border border-slate-200 shadow-sm',
+        'rounded-xl bg-white border border-slate-200 shadow-[0_1px_2px_rgba(49,36,31,0.04)]',
         className
       )}
     >
@@ -172,42 +202,38 @@ export function StatCard({
   isMain?: boolean;
 }) {
   const content = (
-    <div className="flex flex-col justify-between h-full min-h-[90px]">
-      <div>
-        <p className="text-xs font-medium text-slate-500 tracking-wide">
-          {label}
-        </p>
+    <div className="flex items-start justify-between gap-3 h-full min-h-[96px]">
+      <div className="min-w-0 flex flex-col h-full">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">{label}</p>
         {isLoading ? (
           <BrainWaveLoader className="py-2" />
         ) : (
           <p className={cn(
-            'font-semibold mt-1.5 leading-none tracking-tight text-slate-900',
-            size === 'lg' ? 'text-3xl' : 'text-2xl'
+            'font-display leading-none tracking-tight text-slate-900 mt-2.5 tabular-nums',
+            size === 'lg' || isMain ? 'text-[40px]' : 'text-[34px]'
           )}>
             {value}
           </p>
         )}
+        {(trendText || sublabel) && (
+          <p className={cn('text-xs mt-auto pt-2', trendText ? 'font-medium text-emerald-700' : 'text-slate-500')}>
+            {trendText ?? sublabel}
+          </p>
+        )}
       </div>
-      {(trendText || sublabel) && (
-        <div className="mt-3">
-          {trendText ? (
-            <span className="text-xs font-medium text-emerald-600">
-              {trendText}
-            </span>
-          ) : sublabel ? (
-            <p className="text-xs text-slate-400">{sublabel}</p>
-          ) : null}
-        </div>
-      )}
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+        <Icon className="h-[18px] w-[18px]" />
+      </span>
     </div>
   );
 
-  const wrapperClass = 'p-4 bg-white border border-slate-200 hover:border-slate-300 transition-colors';
+  const wrapperClass = 'p-4 h-full transition-colors';
+  const interactiveClass = 'hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
 
   if (href) {
     return (
       <SectionCard className="p-0 overflow-hidden">
-        <Link href={href} className={cn("block", wrapperClass)}>
+        <Link href={href} className={cn("block", wrapperClass, interactiveClass)}>
           {content}
         </Link>
       </SectionCard>
@@ -217,7 +243,7 @@ export function StatCard({
   if (onClick) {
     return (
       <SectionCard className="p-0 overflow-hidden">
-        <button type="button" onClick={onClick} className={cn("block w-full text-left", wrapperClass)}>
+        <button type="button" onClick={onClick} className={cn("block w-full text-left", wrapperClass, interactiveClass)}>
           {content}
         </button>
       </SectionCard>
@@ -263,32 +289,43 @@ export function StatusBadge({ status }: { status: string }) {
 export function QuickActionsList({
   title = 'Quick actions',
   actions,
-  accent = 'teal',
+  layout = 'stack',
 }: {
   title?: string;
   accent?: Accent;
-  actions: { label: string; onClick?: () => void; href?: string }[];
+  /** `row` spreads actions across the card (full-width dashboards). */
+  layout?: 'stack' | 'row';
+  actions: { label: string; onClick?: () => void; href?: string; icon?: AppIcon; hint?: string }[];
 }) {
+  const itemClass =
+    'group flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-left hover:border-slate-300 hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
+  const body = (action: (typeof actions)[number]) => {
+    const Icon = action.icon ?? ArrowUpRight;
+    return (
+      <>
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-700 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+          <Icon className="h-4 w-4" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium text-slate-900 truncate">{action.label}</span>
+          {action.hint && <span className="block text-xs text-slate-500 truncate">{action.hint}</span>}
+        </span>
+        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700 transition-colors" />
+      </>
+    );
+  };
   return (
     <SectionCard className="p-4">
-      <h3 className="text-sm font-semibold text-slate-900 mb-3">{title}</h3>
-      <div className="space-y-1.5">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 mb-3">{title}</h3>
+      <div className={cn('grid gap-2', layout === 'row' ? 'sm:grid-cols-2 xl:grid-cols-4' : 'grid-cols-1')}>
         {actions.map((action, i) =>
           action.href ? (
-            <a
-              key={i}
-              href={action.href}
-              className="block w-full text-left px-3 py-2 rounded-md font-medium text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
-            >
-              {action.label}
-            </a>
+            <Link key={i} href={action.href} className={itemClass}>
+              {body(action)}
+            </Link>
           ) : (
-            <button
-              key={i}
-              onClick={action.onClick}
-              className="block w-full text-left px-3 py-2 rounded-md font-medium text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
-            >
-              {action.label}
+            <button key={i} type="button" onClick={action.onClick} className={itemClass}>
+              {body(action)}
             </button>
           )
         )}
@@ -361,22 +398,22 @@ export function MiniBarChart({
     <div role="img" aria-label={summary}>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} barSize={20} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
           <XAxis
             dataKey="name"
             tickLine={false}
             axisLine={false}
-            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
+            tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 500 }}
             dy={8}
           />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
+            tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 500 }}
             dx={-8}
           />
           <Tooltip
-            cursor={{ fill: 'rgba(241, 245, 249, 0.4)', radius: 4 }}
+            cursor={{ fill: 'color-mix(in oklab, var(--muted) 50%, transparent)', radius: 4 }}
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
                 return (
@@ -389,7 +426,7 @@ export function MiniBarChart({
               return null;
             }}
           />
-          <Bar dataKey={dataKey} fill={color} radius={[3, 3, 0, 0]} />
+          <Bar dataKey={dataKey} fill={color} radius={[3, 3, 0, 0]} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -417,6 +454,7 @@ export function DonutStat({
       <ResponsiveContainer width="100%" height={180}>
         <PieChart>
           <Pie
+            isAnimationActive={false}
             data={segments}
             dataKey="value"
             nameKey="name"
@@ -502,12 +540,12 @@ export function DashboardPageHeader({
           ))}
         </div>
       ) : (
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
           {eyebrow}
         </span>
       )}
-      <h1 className="font-display text-3xl font-normal text-slate-900 tracking-tight mt-0.5">{title}</h1>
-      <p className="text-sm text-slate-500 mt-1 max-w-xl">{description}</p>
+      <h1 className="font-display text-[34px] md:text-[40px] leading-[1.05] font-normal text-slate-950 tracking-[-0.01em] mt-1">{title}</h1>
+      <p className="text-sm text-slate-600 mt-2 max-w-2xl">{description}</p>
     </div>
   );
 }

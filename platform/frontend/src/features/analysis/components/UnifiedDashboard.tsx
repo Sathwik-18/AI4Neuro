@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Stethoscope,
   Upload,
-} from 'lucide-react';
+} from '@/components/icons';
 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { Badge } from '@/components/ui/badge';

@@ -33,6 +33,15 @@ class _TableQuery:
         self._payload = dict(row)
         return self
 
+    def upsert(self, row: dict, on_conflict: str | None = None) -> "_TableQuery":
+        self._op = "upsert"
+        self._payload = dict(row)
+        self._conflict = on_conflict or "id"
+        return self
+
+    def order(self, _col: str) -> "_TableQuery":
+        return self
+
     def update(self, patch: dict) -> "_TableQuery":
         self._op = "update"
         self._payload = dict(patch)
@@ -77,6 +86,15 @@ class _TableQuery:
             new_row.setdefault("updated_at", now)
             rows.append(new_row)
             return _Result([new_row])
+
+        if self._op == "upsert":
+            key = self._payload.get(self._conflict)
+            for r in rows:
+                if r.get(self._conflict) == key:
+                    r.update(self._payload)
+                    return _Result([r])
+            self._op = "insert"
+            return self.execute()
 
         matched = [r for r in rows if self._matches(r)]
 

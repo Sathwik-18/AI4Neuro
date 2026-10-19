@@ -25,7 +25,7 @@ import {
   Database,
   HardDrive,
   RefreshCw,
-} from 'lucide-react';
+} from '@/components/icons';
 import { DashboardShell, type NavItem } from '@/components/dashboards/shared/DashboardShell';
 import {
   SectionCard,
@@ -258,26 +258,26 @@ export const SuperAdminDashboard: React.FC = () => {
                     <AreaChart data={patientVisitsData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorVisitsIndigo" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#806257" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#806257" stopOpacity={0.0} />
+                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                       <XAxis
                         dataKey="day"
                         tickLine={false}
                         axisLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 500 }}
                         dy={8}
                       />
                       <YAxis
                         tickLine={false}
                         axisLine={false}
-                        tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }}
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 10, fontWeight: 500 }}
                         dx={-8}
                       />
                       <Tooltip
-                        cursor={{ stroke: '#806257', strokeWidth: 1, strokeDasharray: '3 3' }}
+                        cursor={{ stroke: 'var(--primary)', strokeWidth: 1, strokeDasharray: '3 3' }}
                         content={({ active, payload, label }) => {
                           if (active && payload && payload.length) {
                             return (
@@ -296,7 +296,7 @@ export const SuperAdminDashboard: React.FC = () => {
                       <Area
                         type="monotone"
                         dataKey="visits"
-                        stroke="#806257"
+                        stroke="var(--primary)"
                         strokeWidth={2}
                         fillOpacity={1}
                         fill="url(#colorVisitsIndigo)"

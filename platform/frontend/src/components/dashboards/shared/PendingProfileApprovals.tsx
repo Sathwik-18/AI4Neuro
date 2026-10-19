@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Loader2, BellRing, Check, X } from 'lucide-react';
+import { Loader2, BellRing, Check, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { SectionCard } from '@/components/dashboards/shared/primitives';
 import { adminApi, type AdminUser } from '@/features/admin/api';

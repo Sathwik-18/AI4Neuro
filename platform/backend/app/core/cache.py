@@ -21,17 +21,27 @@ T = TypeVar("T")
 
 _cache: TTLCache = TTLCache(maxsize=2048, ttl=30)
 _lock = threading.Lock()
+# One lock per key being computed, so a burst of concurrent misses for the
+# same key (a dashboard firing several requests at once) runs ``fn`` once
+# instead of stampeding the database with identical queries.
+_key_locks: dict[str, threading.Lock] = {}
 
 
 def cached(key: str, fn: Callable[[], T]) -> T:
     """Return the cached value for ``key`` (30s TTL), computing and storing
-    it via ``fn`` on a miss."""
+    it via ``fn`` on a miss. Concurrent misses for one key compute once."""
     with _lock:
         if key in _cache:
             return _cache[key]
-    value = fn()
-    with _lock:
-        _cache[key] = value
+        key_lock = _key_locks.setdefault(key, threading.Lock())
+    with key_lock:
+        with _lock:
+            if key in _cache:
+                return _cache[key]
+        value = fn()
+        with _lock:
+            _cache[key] = value
+            _key_locks.pop(key, None)
     return value
 
 

@@ -17,7 +17,7 @@ import {
   Loader2,
   SkipBack,
   SkipForward,
-} from 'lucide-react';
+} from '@/components/icons';
 
 interface SliceUrls {
   axial: string[];

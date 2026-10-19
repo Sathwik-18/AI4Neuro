@@ -13,9 +13,11 @@ next to the input file instead of a restructured derivatives tree).
 
 from __future__ import annotations
 
+import gzip
 import logging
 import os
 import platform
+import shutil
 import stat
 import subprocess
 from dataclasses import dataclass
@@ -203,6 +205,14 @@ def run_cat12_preprocessing(input_nii_path: str) -> Cat12Result | None:
         if stem.lower().endswith(ext):
             stem = stem[: -len(ext)]
             break
+
+    # SPM reads plain .nii only, and uploads are usually .nii.gz - unpack next
+    # to the original so CAT12's mri/ label/ report/ outputs land in work_dir.
+    if input_nii_path.lower().endswith(".gz"):
+        unpacked = os.path.join(work_dir, f"{stem}.nii")
+        with gzip.open(input_nii_path, "rb") as src, open(unpacked, "wb") as dst:
+            shutil.copyfileobj(src, dst)
+        input_nii_path = unpacked
 
     script_path = os.path.join(work_dir, "cat12_segment.m")
     _write_segmentation_batch(input_nii_path, script_path)

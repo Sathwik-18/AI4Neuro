@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search as SearchIcon, Stethoscope, UserRound, Building2 } from 'lucide-react';
+import { Search as SearchIcon, Stethoscope, UserRound, Building2 } from '@/components/icons';
 import { RoleShell } from '@/components/dashboards/shared/RoleShell';
 import { SectionCard, DashboardPageHeader, StatusBadge } from '@/components/dashboards/shared/primitives';
 import { SessionsTable } from '@/components/dashboards/shared/SessionsTable';

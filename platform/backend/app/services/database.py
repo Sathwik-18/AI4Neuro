@@ -1,14 +1,13 @@
-"""Database service — the single adapter over Supabase tables.
+"""Database service — the single place the backend reads and writes records.
 
-Consolidates the divergent ``database.py`` helpers of the two old backends
-(EEG ``predictions`` vs MRI ``mri_sessions``/``mri_predictions``) into one API
-over the **unified** tables (``analysis_sessions`` / ``analysis_results`` /
-``analysis_reports`` / ``job_events``). Standardizes on the supabase-py v2 query
-builder.
+Queries are written against a small table-style query builder
+(``client.table(name).select("*").eq(...).execute()``). In production that
+builder is ``firebase_client.FirebaseClient`` over Firestore; tests inject a
+fake. Firestore has no cascading deletes, so every multi-table delete here
+removes its children explicitly.
 
-The client is injected (``DatabaseService(client=...)``) so tests pass a fake and
-no secrets are needed. When no client is given it lazily uses the configured
-service-role client.
+The client is injected (``DatabaseService(client=...)``) so tests need no
+credentials. When no client is given it lazily uses the configured one.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ from app.core.cache import cached, invalidate_prefix
 from app.core.logging import get_logger
 from app.pipelines.base import PipelineResult
 from app.schemas.analysis import SessionStatus
-from app.services.supabase_client import get_service_client, require_client
+from app.services.firebase_client import get_service_client, require_client
 
 logger = get_logger(__name__)
 
@@ -28,6 +27,13 @@ SESSIONS_TABLE = "analysis_sessions"
 RESULTS_TABLE = "analysis_results"
 REPORTS_TABLE = "analysis_reports"
 EVENTS_TABLE = "job_events"
+ROLE_PROFILE_TABLES = (
+    "patient_profiles",
+    "doctor_profiles",
+    "radiologist_profiles",
+    "hospital_admin_profiles",
+    "super_admin_profiles",
+)
 
 
 def _now() -> str:
@@ -35,7 +41,7 @@ def _now() -> str:
 
 
 def _one(execute_result: Any) -> dict | None:
-    """Extract a single row from a supabase execute() result."""
+    """Extract a single row from an execute() result."""
     data = getattr(execute_result, "data", None)
     if data is None:
         return None
@@ -106,12 +112,8 @@ class DatabaseService:
         self.client.table(REPORTS_TABLE).delete().eq("session_id", session_id).execute()
         self.client.table(EVENTS_TABLE).delete().eq("session_id", session_id).execute()
         self.client.table(SESSIONS_TABLE).delete().eq("id", session_id).execute()
-        try:
-            self.client.table("mri_predictions").delete().eq("session_id", session_id).execute()
-            self.client.table("mri_sessions").delete().eq("id", session_id).execute()
-        except Exception:
-            pass
         invalidate_prefix("sessions:")
+        invalidate_prefix("results:")
 
     def list_sessions(
         self,
@@ -126,9 +128,9 @@ class DatabaseService:
         """Fetch sessions matching the provided equality filters.
 
         Role-scoping / ordering / limit are applied by the caller (route) so the
-        same code path works against Supabase and the in-memory test fake.
+        same code path works against Firestore and the in-memory test fake.
 
-        Only ``hospital_id`` is a real Supabase filter — cached per-hospital
+        Only ``hospital_id`` is a real database filter — cached per-hospital
         (30s TTL, invalidated on any session write, see create_session/
         _update_session/delete_session) since this is the shared fetch behind
         every session list/search view (list_analyses, platform_admin's scan
@@ -377,36 +379,35 @@ class DatabaseService:
     def hard_delete_hospital(self, hospital_id: str) -> list[str]:
         """Permanently delete a hospital and EVERYTHING scoped to it, and return
         the ids of the users that were removed (so the caller can also delete
-        their Supabase Auth accounts).
+        their login accounts).
 
-        Deletes, in FK-safe order: analysis sessions (results/reports/job_events
-        cascade off them), doctor-patient relationships, the hospital's audit
-        trail, every user_profiles row (role-detail rows cascade via ON DELETE
-        CASCADE), and finally the hospital row itself. RESTRICT self-references
-        (hospitals.created_by, user_profiles.created_by_admin, audit_log.actor_id)
-        are cleared first so no delete is blocked.
+        Nothing cascades in Firestore, so each layer is removed explicitly:
+        analysis sessions with their results/reports/events, doctor-patient
+        relationships, report-access requests, the hospital's audit trail,
+        every user's role-detail row and profile, then the hospital itself.
 
         Unlike suspend/soft-delete this is irreversible — the rows are gone.
         """
         users = self.list_user_profiles(hospital_id=hospital_id)
         user_ids = [u["id"] for u in users]
 
-        # 1. Break RESTRICT references that would otherwise block the deletes.
-        self.client.table("hospitals").update({"created_by": None}).eq("id", hospital_id).execute()
-        for uid in user_ids:
-            self.client.table("user_profiles").update({"created_by_admin": None}).eq("id", uid).execute()
+        # 1. Analysis data.
+        sessions = self.client.table(SESSIONS_TABLE).delete().eq("hospital_id", hospital_id).execute()
+        session_ids = [s["id"] for s in (getattr(sessions, "data", None) or [])]
+        if session_ids:
+            for table in (RESULTS_TABLE, REPORTS_TABLE, EVENTS_TABLE):
+                self.client.table(table).delete().in_("session_id", session_ids).execute()
 
-        # 2. Analysis data — results/reports/job_events cascade off sessions.
-        self.client.table("analysis_sessions").delete().eq("hospital_id", hospital_id).execute()
-
-        # 3. Relationships + audit trail scoped to the hospital / its users.
-        self.client.table("doctor_patient_relationships").delete().eq("hospital_id", hospital_id).execute()
-        self.client.table("audit_log").delete().eq("hospital_id", hospital_id).execute()
+        # 2. Relationships, access requests + audit trail scoped to the hospital.
+        for table in ("doctor_patient_relationships", "report_access_requests", "audit_log"):
+            self.client.table(table).delete().eq("hospital_id", hospital_id).execute()
         for uid in user_ids:
             self.client.table("audit_log").delete().eq("actor_id", uid).execute()
 
-        # 4. Users — patient/doctor/radiologist/hospital_admin profile rows
-        #    cascade via ON DELETE CASCADE on their user_id FK.
+        # 3. Users — role-detail rows first, then the profiles.
+        if user_ids:
+            for table in ROLE_PROFILE_TABLES:
+                self.client.table(table).delete().in_("user_id", user_ids).execute()
         self.client.table("user_profiles").delete().eq("hospital_id", hospital_id).execute()
 
         # 5. The hospital row itself.
@@ -414,6 +415,9 @@ class DatabaseService:
         invalidate_prefix("hospitals:")
         invalidate_prefix("sessions:")
         invalidate_prefix("hospital:")
+        invalidate_prefix("user_profile:")
+        invalidate_prefix("results:")
+        invalidate_prefix("relationships:")
         return user_ids
 
     # ------------------------------ users --------------------------------- #
@@ -571,7 +575,7 @@ class DatabaseService:
         """Cached per hospital_id (30s TTL) — doctor_id/patient_id are applied
         in Python on the cached set, same pattern as list_sessions, so a
         doctor's "my patients" fetch shares the cache entry with the
-        hospital-wide assignments list instead of re-querying Supabase."""
+        hospital-wide assignments list instead of re-querying the database."""
         rows = cached(f"relationships:{hospital_id or 'ALL'}", lambda: self._fetch_relationships(hospital_id))
         if doctor_id:
             rows = [r for r in rows if str(r.get("doctor_id")) == str(doctor_id)]

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from '@/components/icons';
 import { SectionCard, DashboardPageHeader, Pagination, ACCENT_STYLES, type Accent } from './primitives';
 import { SessionsTable } from './SessionsTable';
 import { analysisApi } from '@/features/analysis/api';

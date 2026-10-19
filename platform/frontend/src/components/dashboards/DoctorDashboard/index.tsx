@@ -33,7 +33,7 @@ import {
   CalendarDays,
   Settings,
   Stethoscope,
-} from 'lucide-react';
+} from '@/components/icons';
 import Link from 'next/link';
 import {
   BarChart,
@@ -680,11 +680,11 @@ export const DoctorDashboard: React.FC = () => {
           </h3>
           <ResponsiveContainer width="100%" height={140}>
             <BarChart data={monthlyTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="month" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={10} width={20} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="month" stroke="var(--muted-foreground)" fontSize={10} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={10} width={20} tickLine={false} axisLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="scans" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="scans" fill="var(--primary)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </SectionCard>

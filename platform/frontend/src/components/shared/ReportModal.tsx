@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, X } from 'lucide-react';
+import { FileText, X } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { SectionCard } from '@/components/dashboards/shared/primitives';
 import { ReportViewer } from '@/components/shared/ReportViewer';

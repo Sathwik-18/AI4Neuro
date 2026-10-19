@@ -14,7 +14,7 @@
  */
 
 import React from 'react';
-import { X, Printer, Brain, Waves, ShieldCheck, HeartPulse, Lightbulb, ExternalLink } from 'lucide-react';
+import { X, Printer, Brain, Waves, ShieldCheck, HeartPulse, Lightbulb, ExternalLink } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { ExplainabilityPanel } from '@/features/analysis/components/ExplainabilityPanel';
 import type { Explainability } from '@/features/analysis/types';

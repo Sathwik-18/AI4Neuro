@@ -1,5 +1,6 @@
 'use client';
 
+import { Brain } from '@/components/icons';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -50,19 +51,7 @@ function RootRedirectSplash() {
       <div className="flex flex-col items-center gap-6">
         <div className="relative">
           <div className="w-20 h-20 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
-            <svg
-              viewBox="0 0 24 24"
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                d="M12 2C9.243 2 7 4.243 7 7c0 .836.194 1.625.537 2.331C5.397 10.148 4 12.233 4 14.667c0 1.545.627 2.944 1.64 3.96C4.626 19.642 4 21.026 4 22.5c0 .828.672 1.5 1.5 1.5h13c.828 0 1.5-.672 1.5-1.5 0-1.474-.627-2.858-1.64-3.873 1.013-1.016 1.64-2.415 1.64-3.96 0-2.434-1.397-4.519-3.537-5.336A4.984 4.984 0 0017 7c0-2.757-2.243-5-5-5z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Brain className="w-10 h-10 text-white" aria-hidden />
           </div>
           <div className="absolute inset-0 -m-4 flex items-center justify-center">
             <div className="w-28 h-28 rounded-2xl border-2 border-primary/20 animate-ping"></div>

@@ -131,35 +131,36 @@ def _cors_headers_for(request: Request) -> dict[str, str]:
 def _install_error_handlers(app: FastAPI) -> None:
     """Return the doc's structured error shape; never leak tracebacks (doc 14.7)."""
 
-    from postgrest.exceptions import APIError as PostgrestAPIError
+    from google.api_core import exceptions as gexc
 
-    from app.services.supabase_client import SupabaseNotConfiguredError
+    from app.services.firebase_client import FirebaseNotConfiguredError
 
-    # Postgres error codes we can turn into an actionable message instead of
-    # a generic 500 — see https://www.postgresql.org/docs/current/errcodes-appendix.html
-    _PG_ERROR_STATUS = {
-        "23505": (409, "conflict", "A record with these details already exists."),
-        "23503": (400, "invalid_reference", "This action references something that doesn't exist."),
-        "23502": (400, "missing_field", "A required field was left empty."),
+    # Database errors we can turn into an actionable message instead of a
+    # generic 500.
+    _DB_ERROR_STATUS = {
+        gexc.AlreadyExists: (409, "conflict", "A record with these details already exists."),
+        gexc.NotFound: (404, "not_found", "The record no longer exists."),
+        gexc.InvalidArgument: (400, "invalid_request", "The request could not be stored."),
+        gexc.ServiceUnavailable: (503, "upstream_unavailable", "The database is temporarily unavailable. Please retry."),
+        gexc.DeadlineExceeded: (503, "upstream_unavailable", "The database is temporarily unavailable. Please retry."),
     }
 
-    @app.exception_handler(PostgrestAPIError)
-    async def postgrest_api_error(request: Request, exc: PostgrestAPIError):
-        pg_code = getattr(exc, "code", None)
-        status_code, error_code, fallback_message = _PG_ERROR_STATUS.get(
-            pg_code, (500, "database_error", "A database error occurred.")
+    @app.exception_handler(gexc.GoogleAPICallError)
+    async def database_api_error(request: Request, exc: gexc.GoogleAPICallError):
+        status_code, error_code, message = next(
+            (v for k, v in _DB_ERROR_STATUS.items() if isinstance(exc, k)),
+            (500, "database_error", "A database error occurred."),
         )
-        message = fallback_message if settings.is_production else (getattr(exc, "message", None) or fallback_message)
-        logger.warning("Database error on %s (pg code=%s): %s", request.url.path, pg_code, message)
+        logger.warning("Database error on %s (%s): %s", request.url.path, type(exc).__name__, exc)
         return JSONResponse(
             status_code=status_code,
             content={"error": {"code": error_code, "message": message, "request_id": None}},
         )
 
-    @app.exception_handler(SupabaseNotConfiguredError)
-    async def supabase_not_configured(request: Request, exc: SupabaseNotConfiguredError):
+    @app.exception_handler(FirebaseNotConfiguredError)
+    async def firebase_not_configured(request: Request, exc: FirebaseNotConfiguredError):
         # Configuration gap, not a bug: respond 503 instead of a noisy 500.
-        logger.warning("Supabase-backed request on %s but Supabase is not configured.", request.url.path)
+        logger.warning("Request on %s needs Firebase, which is not configured.", request.url.path)
         return JSONResponse(
             status_code=503,
             content={
@@ -196,13 +197,13 @@ def _install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(httpx.HTTPError)
     async def upstream_http_exc(request: Request, exc: httpx.HTTPError):
-        logger.warning("Upstream Supabase/network error on %s: %s", request.url.path, exc)
+        logger.warning("Upstream network error on %s: %s", request.url.path, exc)
         return JSONResponse(
             status_code=503,
             content={
                 "error": {
                     "code": "upstream_unavailable",
-                    "message": "Supabase is temporarily unavailable. Please retry.",
+                    "message": "An upstream service is temporarily unavailable. Please retry.",
                     "request_id": None,
                 }
             },

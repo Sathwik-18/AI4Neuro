@@ -48,7 +48,7 @@ def update_settings(
         "settings": payload.settings,
         "updated_by": None if principal.is_dev else principal.user_id,
     }
-    db.client.table("platform_settings").update(patch).eq("id", True).execute()
+    db.client.table("platform_settings").upsert({"id": True, **patch}).execute()
     res = db.client.table("platform_settings").select("*").eq("id", True).maybe_single().execute()
     row = getattr(res, "data", None) or {"settings": payload.settings}
     return PlatformSettingsResponse(**row)

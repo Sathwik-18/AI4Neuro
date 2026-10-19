@@ -1,6 +1,6 @@
 """Shared pytest fixtures.
 
-Wires the app to an in-memory FakeSupabase and runs jobs synchronously so a
+Wires the app to an in-memory data client and runs jobs synchronously so a
 POST /analysis has finished processing by the time the test polls status.
 """
 
@@ -18,11 +18,13 @@ from app.services.jobs import JobService, set_job_service
 from app.services.orchestrator import run_analysis_job
 from app.services.reports import NoopReportService
 from app.services.storage import StorageService
+from app.services.firebase_client import FirebaseClient
+from tests.fake_firestore import FakeBucket, FakeFirestore
 from tests.fake_supabase import FakeSupabase
 
 
 class FakeAuthAdminService:
-    """In-memory stand-in for AuthAdminService — no real Supabase Auth calls.
+    """In-memory stand-in for AuthAdminService — no real Firebase Auth calls.
 
     Tracks created user ids so tests can assert on rollback (delete_auth_user
     called after a downstream failure).
@@ -31,6 +33,7 @@ class FakeAuthAdminService:
     def __init__(self) -> None:
         self.created: dict[str, dict] = {}
         self.deleted: list[str] = []
+        self.claims: dict[str, dict] = {}
 
     def create_auth_user(self, *, email: str, full_name: str, role: str, password: str | None = None) -> dict:
         user_id = str(uuid.uuid4())
@@ -38,6 +41,9 @@ class FakeAuthAdminService:
         record = {"id": user_id, "email": email, "temporary_password": password}
         self.created[user_id] = record
         return record
+
+    def set_claims(self, user_id: str, *, role: str | None, hospital_id: str | None) -> None:
+        self.claims[user_id] = {"app_role": role, "hospital": hospital_id}
 
     def delete_auth_user(self, user_id: str) -> None:
         self.deleted.append(user_id)
@@ -63,18 +69,23 @@ class SyncJobService(JobService):
         )
 
 
-@pytest.fixture
-def fake_supabase() -> FakeSupabase:
-    return FakeSupabase()
+@pytest.fixture(params=["table-fake", "firebase-adapter"])
+def fake_supabase(request):
+    """The injected data client. Parametrised so the whole suite also runs
+    through the production Firebase adapter (over an in-memory Firestore),
+    proving it behaves like the simple table fake the tests were written for."""
+    if request.param == "table-fake":
+        return FakeSupabase()
+    return FirebaseClient(FakeFirestore(), FakeBucket())
 
 
 @pytest.fixture
-def db_service(fake_supabase: FakeSupabase) -> DatabaseService:
+def db_service(fake_supabase) -> DatabaseService:
     return DatabaseService(client=fake_supabase)
 
 
 @pytest.fixture
-def storage_service(fake_supabase: FakeSupabase) -> StorageService:
+def storage_service(fake_supabase) -> StorageService:
     return StorageService(client=fake_supabase)
 
 

@@ -27,7 +27,7 @@ import {
   Phone,
   Droplets,
   ScanLine,
-} from 'lucide-react';
+} from '@/components/icons';
 import Link from 'next/link';
 import { use } from 'react';
 import {

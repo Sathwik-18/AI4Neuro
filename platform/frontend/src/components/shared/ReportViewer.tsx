@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, Download, ExternalLink, Clock, CheckCircle, AlertCircle } from '@/components/icons';
 import type { Role } from '@/lib/roles';
 
 interface ReportUrls {

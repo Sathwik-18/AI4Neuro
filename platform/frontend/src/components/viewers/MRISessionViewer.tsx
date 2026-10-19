@@ -25,7 +25,7 @@ import {
   Image as ImageIcon,
   ClipboardList,
   StickyNote,
-} from 'lucide-react';
+} from '@/components/icons';
 import Link from 'next/link';
 import { useState } from 'react';
 import { SpotlightCard, GradientText, PulseRing } from '@/components/ui/animated';

@@ -35,10 +35,10 @@ export function PageTransitionLoader() {
       >
         <defs>
           <linearGradient id="wave-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#2563eb" stopOpacity="0" />
-            <stop offset="30%" stopColor="#2563eb" stopOpacity="1" />
-            <stop offset="70%" stopColor="#3b82f6" stopOpacity="1" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0" />
+            <stop offset="30%" stopColor="var(--primary)" stopOpacity="1" />
+            <stop offset="70%" stopColor="var(--color-blue-400)" stopOpacity="1" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <rect width="1200" height="4" fill="url(#wave-grad)">
@@ -63,7 +63,7 @@ export function PageTransitionLoader() {
         <path
           d="M0 2 L10 2 L12 0 L14 4 L16 1 L18 3 L20 2 L40 2 L42 0 L44 4 L46 1 L48 3 L50 2 L70 2 L72 0 L74 4 L76 1 L78 3 L80 2 L100 2 L102 0 L104 4 L106 1 L108 3 L110 2 L130 2 L132 0 L134 4 L136 1 L138 3 L140 2 L160 2 L162 0 L164 4 L166 1 L168 3 L170 2 L200 2"
           fill="none"
-          stroke="#2563eb"
+          stroke="var(--primary)"
           strokeWidth="1"
         >
           <animate
